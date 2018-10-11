@@ -8,7 +8,7 @@ int main(int argc, char* argv[]){
 
     ImageViewer iv(argv[1]);
 
-    ImageViewer::enterMainLoop();
+    iv.enterMainLoop();
 
     return 0;
 }
