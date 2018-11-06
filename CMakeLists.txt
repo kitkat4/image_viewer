@@ -6,11 +6,11 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 include_directories(include)
 
-add_executable(test_code
-  src/test.cpp
+add_executable(image_viewer
+  src/main.cpp
   src/image_viewer.cpp)
 
-target_link_libraries(test_code
+target_link_libraries(image_viewer
   opencv_world
   # opencv_core
   # opencv_highgui
