@@ -1,6 +1,7 @@
 #pragma once
 
 #include "image_viewer.hpp"
+#include "window_manager.hpp"
 
 #include <opencv2/opencv.hpp>
 #include <experimental/filesystem>
@@ -18,7 +19,7 @@ class DirScanner{
 protected:
 
     DirScanner(const std::string& path, const std::string& window_name,
-               ImageViewer* const viewer);
+               ImageViewer* const viewer, WindowManager* const wm);
     ~DirScanner();
     operator bool()const{
         return ok;
@@ -41,6 +42,7 @@ protected:
     int im_ix;
 
     ImageViewer* const viewer;
+    WindowManager* const wm;
 };
 
 

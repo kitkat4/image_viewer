@@ -3,9 +3,9 @@
 
 
 DirScanner::DirScanner(const std::string& path, const std::string& window_name,
-                       ImageViewer* const viewer)
+                       ImageViewer* const viewer, WindowManager* const wm)
     :ok(true), cur_dir(fs::path()),
-     im_ix(0), window_name(window_name), viewer(viewer){
+     im_ix(0), window_name(window_name), viewer(viewer), wm(wm){
 
     if(fs::is_regular_file(path)){ // image path
 
@@ -80,13 +80,11 @@ DirScanner* DirScanner::mainLoop(){
 
     // cv::setWindowProperty(window_name, CV_WND_PROP_ASPECTRATIO, CV_WINDOW_KEEPRATIO);
 
-    cv::imshow(window_name, viewer->cur_im);
-    cv::displayStatusBar(window_name, viewer->cur_path, 1000);
 
+    wm->update(viewer->cur_im, viewer->cur_path);
+    
     while(true){
 
-        
-        
         char c = cv::waitKey(10);
 
         if(c == 'S' || c == 'Q'){ // right or left
@@ -128,38 +126,34 @@ DirScanner* DirScanner::mainLoop(){
 
             }
 
-            cv::imshow(window_name, viewer->cur_im);
-            cv::displayStatusBar(window_name, viewer->cur_path, 1000);
+            wm->update(viewer->cur_im, viewer->cur_path);
+            
                 
             continue;
 
         }else if(c == 'R'){ // up
             fs::path p = cur_dir.parent_path();
             if(p.generic_string().size() > 0){
-                return new DirScanner(cur_dir.parent_path(), window_name, viewer);
+                return new DirScanner(cur_dir.parent_path(), window_name, viewer, wm);
             }
         }else if(c == 'T'){ // down
             for(auto& itr : entries){
                 if(! fs::is_regular_file(itr)){
-                    return new DirScanner(itr, window_name, viewer);
+                    return new DirScanner(itr, window_name, viewer, wm);
                 }
             }
         }else if(c == 'U'){      // PgUp
-            return new DirScanner(nextBrotherDir(), window_name, viewer);
+            return new DirScanner(nextBrotherDir(), window_name, viewer, wm);
         }else if(c == 'V'){     // PgDown
-            return new DirScanner(previousBrotherDir(), window_name, viewer);
+            return new DirScanner(previousBrotherDir(), window_name, viewer, wm);
         }else if(c != -1){
             std::cout << c << std::endl;
         }
 
-        try{
-            if(cv::getWindowProperty(window_name, CV_WND_PROP_VISIBLE) == 0){
-            // if(! cv::GetWindowHandle(window_name.c_str())){
-                return nullptr; // when the window is closed with a mouse click or Alt+F4
-            }
-        }catch(std::exception){
+        if(wm->isShutdown()){
             return nullptr;
         }
+        
     }
 }
 

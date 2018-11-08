@@ -3,23 +3,22 @@
 
 
 ImageViewer::ImageViewer(const std::string& path, const std::string& window_name)
-    :window_name(window_name){
+    :window_name(window_name), wm(new WindowManager(window_name)){
 
-    cur_instance = new DirScanner(path, window_name, this);
+    cur_instance = new DirScanner(path, window_name, this, wm.get());
 }
 
 ImageViewer::~ImageViewer(){
-    
+
 }
 
 void ImageViewer::enterMainLoop(){
 
-    // Open a window
     if(! window_opened){
-        cv::namedWindow(window_name, CV_WINDOW_NORMAL | CV_WINDOW_KEEPRATIO | CV_GUI_EXPANDED);
+        WindowManager wm(window_name);
         window_opened = true;
     }
-
+    
     if(! cur_instance){
         std::cerr << "[ERROR] No instance created" << std::endl;
         return;
