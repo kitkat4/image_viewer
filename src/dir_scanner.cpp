@@ -15,7 +15,10 @@ DirScanner::DirScanner(const std::string& path, const std::string& window_name,
 
 
         if(viewer->cur_im.empty()){
-            std::cerr << "[ERROR] Failed to open " << path << std::endl;
+            std::cerr << my_utils_kk4::red
+                      << "[ERROR] Failed to open " << path
+                      << my_utils_kk4::default_color
+                      << std::endl;
             ok = false;
         }
 
@@ -85,9 +88,9 @@ DirScanner* DirScanner::mainLoop(){
     
     while(true){
 
-        char c = cv::waitKey(10);
+        Command c = wm->nextCommand();
 
-        if(c == 'S' || c == 'Q'){ // right or left
+        if(c == Command::NEXT_IM || c == Command::PREVIOUS_IM){ 
 
             int check_count = 0;
                 
@@ -99,9 +102,9 @@ DirScanner* DirScanner::mainLoop(){
                     break;
                 }
                 
-                if(c == 'S'){       // right
+                if(c == Command::NEXT_IM){
                     im_ix++;
-                }else if(c == 'Q'){ // left
+                }else if(c == Command::PREVIOUS_IM){
                     im_ix--;
                 }
             
@@ -131,23 +134,21 @@ DirScanner* DirScanner::mainLoop(){
                 
             continue;
 
-        }else if(c == 'R'){ // up
+        }else if(c == Command::UPPER_DIR){
             fs::path p = cur_dir.parent_path();
             if(p.generic_string().size() > 0){
                 return new DirScanner(cur_dir.parent_path(), window_name, viewer, wm);
             }
-        }else if(c == 'T'){ // down
+        }else if(c == Command::LOWER_DIR){
             for(auto& itr : entries){
                 if(! fs::is_regular_file(itr)){
                     return new DirScanner(itr, window_name, viewer, wm);
                 }
             }
-        }else if(c == 'U'){      // PgUp
+        }else if(c == Command::NEXT_DIR){
             return new DirScanner(nextBrotherDir(), window_name, viewer, wm);
-        }else if(c == 'V'){     // PgDown
+        }else if(c == Command::PREVIOUS_DIR){
             return new DirScanner(previousBrotherDir(), window_name, viewer, wm);
-        }else if(c != -1){
-            std::cout << c << std::endl;
         }
 
         if(wm->isShutdown()){

@@ -11,6 +11,7 @@
 
 #include "window_manager.hpp"
 #include "dir_scanner.hpp"
+#include "my_utils_kk4.hpp"
 
 #include <opencv2/opencv.hpp>
 

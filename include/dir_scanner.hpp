@@ -2,6 +2,7 @@
 
 #include "image_viewer.hpp"
 #include "window_manager.hpp"
+#include "my_utils_kk4.hpp"
 
 #include <opencv2/opencv.hpp>
 #include <experimental/filesystem>
@@ -11,6 +12,7 @@
 #include <iostream>
 
 namespace fs = std::experimental::filesystem;
+using Command = WindowManager::Command;
 
 class ImageViewer;
 
