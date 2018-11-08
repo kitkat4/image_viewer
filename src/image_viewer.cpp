@@ -20,7 +20,10 @@ void ImageViewer::enterMainLoop(){
     }
     
     if(! cur_instance){
-        std::cerr << "[ERROR] No instance created" << std::endl;
+        std::cerr << my_utils_kk4::red
+                  << "[ERROR] No instance created"
+                  << my_utils_kk4::default_color
+                  << std::endl;
         return;
     }
     
