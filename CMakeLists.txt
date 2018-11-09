@@ -20,6 +20,7 @@ find_package(Qt5 REQUIRED
   Test
   Concurrent)
 find_package(Threads)
+find_package(X11)
 
 add_executable(image_viewer
   src/main.cpp
@@ -29,5 +30,6 @@ add_executable(image_viewer
 
 target_link_libraries(image_viewer
   ${OpenCV_LIBS}
+  ${X11_LIBRARIES}
   stdc++fs
   )

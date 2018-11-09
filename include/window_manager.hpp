@@ -4,6 +4,15 @@
 
 #include <opencv2/opencv.hpp>
 
+#ifdef IMAGE_VIEWER_WITH_X11_WINDOW
+
+#include <X11/Xlib.h>
+#include <X11/Xutil.h>
+#include <X11/Xos.h>
+
+#endif
+
+
 #include <string>
 
 class WindowManager{
@@ -31,6 +40,17 @@ public:
 protected:
 
     std::string window_name;
+
+#ifdef IMAGE_VIEWER_WITH_X11_WINDOW
+
+    Display * dis;
+    int screen;
+    Window win;
+    GC gc;
+    
+    
+#endif
+
 };
 
 

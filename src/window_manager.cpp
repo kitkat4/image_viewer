@@ -12,7 +12,23 @@ WindowManager::WindowManager(const std::string& window_name)
     
 #elif defined IMAGE_VIEWER_WITH_X11_WINDOW
 
-    // do something
+    dis = XOpenDisplay((char*)0);
+    screen = DefaultScreen(dis);
+
+    unsigned long black = BlackPixel(dis, screen);
+    unsigned long white = WhitePixel(dis, screen);
+
+    win = XCreateSimpleWindow(dis, DefaultRootWindow(dis), 0, 0, 200, 300, 5, white, black);
+
+    XSetStandardProperties(dis, win, "Hoge", "Fuga", None, NULL, 0, NULL);
+
+    XSelectInput(dis, win, ExposureMask | ButtonPressMask | KeyPressMask);
+
+    gc = XCreateGC(dis, win, 0, 0);
+
+    XClearWindow(dis, win);
+    XMapRaised(dis, win);
+    
     
 #endif
 
@@ -23,7 +39,7 @@ WindowManager::~WindowManager(){}
 void WindowManager::update(const cv::Mat& im, const std::string& current_path){
 
 #ifdef IMAGE_VIEWER_WITH_OPENCV_WINDOW
-    
+
     cv::imshow(window_name, im);
     cv::displayStatusBar(window_name, current_path, 1000);
     

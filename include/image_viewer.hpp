@@ -1,19 +1,11 @@
 #pragma once
 
 
-#ifdef IMAGE_VIEWER_WITH_X11_WINDOW
+#include <opencv2/opencv.hpp>
 
-#include <X11/Xlib.h>
-#include <X11/Xutil.h>
-#include <X11/Xos.h>
-
-#endif
-
-#include "window_manager.hpp"
 #include "dir_scanner.hpp"
 #include "my_utils_kk4.hpp"
-
-#include <opencv2/opencv.hpp>
+#include "window_manager.hpp"
 
 #include <memory>
 #include <string>
