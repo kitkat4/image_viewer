@@ -37,7 +37,7 @@ void ImageViewer::enterMainLoop(){
         }
         
         if(! new_instance){
-            cv::destroyWindow(window_name);
+            wm->closeWindow();
             return;
         }
     }

@@ -36,6 +36,7 @@ public:
     void update(const cv::Mat& im, const std::string& current_path);
     Command nextCommand()const;
     bool isShutdown()const;
+    void closeWindow();
 
 protected:
 

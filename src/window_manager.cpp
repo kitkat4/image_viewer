@@ -12,13 +12,23 @@ WindowManager::WindowManager(const std::string& window_name)
     
 #elif defined IMAGE_VIEWER_WITH_X11_WINDOW
 
-    dis = XOpenDisplay((char*)0);
+    dis = XOpenDisplay(nullptr);
+
+    if(! dis){
+        std::cerr << my_utils_kk4::red
+                  << "[ERROR] Failed to open a new window (" << __FILE__
+                  << ", line " << __LINE__ << ")"
+                  << my_utils_kk4::default_color
+                  << std::endl;
+    }
+    
     screen = DefaultScreen(dis);
 
     unsigned long black = BlackPixel(dis, screen);
     unsigned long white = WhitePixel(dis, screen);
 
-    win = XCreateSimpleWindow(dis, DefaultRootWindow(dis), 0, 0, 200, 300, 5, white, black);
+    // win = XCreateSimpleWindow(dis, DefaultRootWindow(dis), 0, 0, 200, 300, 5, white, black);
+    win = XCreateSimpleWindow(dis, RootWindow(dis, screen), 0, 0, 200, 300, 1, white, black);
 
     XSetStandardProperties(dis, win, "Hoge", "Fuga", None, NULL, 0, NULL);
 
@@ -26,9 +36,16 @@ WindowManager::WindowManager(const std::string& window_name)
 
     gc = XCreateGC(dis, win, 0, 0);
 
+    XSetBackground(dis,gc,white);
+	XSetForeground(dis,gc,black);
+
     XClearWindow(dis, win);
     XMapRaised(dis, win);
     
+    
+#else
+
+    std::cerr << "[ERROR] oops!" << std::endl;
     
 #endif
 
@@ -112,5 +129,20 @@ bool WindowManager::isShutdown()const{
     
 #endif
 
+}
+
+
+void WindowManager::closeWindow(){
+
+#ifdef IMAGE_VIEWER_WITH_OPENCV_WINDOW
+    cv::destroyWindow(window_name);
+#elif defined IMAGE_VIEWER_WITH_X11_WINDOW
+
+    XFreeGC(dis, gc);
+	XDestroyWindow(dis,win);
+	XCloseDisplay(dis);	
+
+#endif
+    
 }
 
