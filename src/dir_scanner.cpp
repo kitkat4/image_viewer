@@ -83,6 +83,8 @@ DirScanner* DirScanner::mainLoop(){
 
     // cv::setWindowProperty(window_name, CV_WND_PROP_ASPECTRATIO, CV_WINDOW_KEEPRATIO);
 
+    std::cerr << "[DEBUG] Called " << __func__ << std::endl;
+
 
     wm->update(viewer->cur_im, viewer->cur_path);
     

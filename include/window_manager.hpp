@@ -44,6 +44,8 @@ protected:
 
 #ifdef IMAGE_VIEWER_WITH_X11_WINDOW
 
+    void drawImage(const cv::Mat& im);
+
     Display * dis;
     int screen;
     Window win;

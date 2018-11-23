@@ -14,10 +14,12 @@ ImageViewer::~ImageViewer(){
 
 void ImageViewer::enterMainLoop(){
 
-    if(! window_opened){
-        WindowManager wm(window_name);
-        window_opened = true;
-    }
+    std::cerr << "[DEBUG] Called " << __func__ << std::endl;
+
+    // if(! window_opened){
+    //     window_opened = true;
+    //     WindowManager wm(window_name);
+    // }
     
     if(! cur_instance){
         std::cerr << my_utils_kk4::red
