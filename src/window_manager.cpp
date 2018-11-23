@@ -127,8 +127,8 @@ bool WindowManager::isShutdown()const{
 
 #elif defined IMAGE_VIEWER_WITH_X11_WINDOW
     
-
     // do something
+    return false;
     
 #endif
 
@@ -166,49 +166,33 @@ void WindowManager::drawImage(const cv::Mat& im){
 
     std::cerr << "[DEBUG] Func " << __func__ << " at line " << __LINE__ << " of file " << __FILE__ << std::endl;
 
-    XImage *x_im = XCreateImage(dis, CopyFromParent, 32, ZPixmap, 0, (char*)im.data,
-                                im.cols, im.rows, 32, 4 * im.cols);
+
+    std::cerr << "[DEBUG] Default depth: " << DefaultDepth(dis, screen) << std::endl;
+    const int depth = DefaultDepth(dis, screen);
+
+    cv::Mat tmp_im;
+    cv::cvtColor(im, tmp_im, CV_BGR2BGRA);
+    XImage *x_im = XCreateImage(dis, CopyFromParent, depth,
+                                ZPixmap, 0, (char*)tmp_im.data,
+                                im.cols, im.rows, 32, 0);
+
 
     std::cerr << "[DEBUG] Func " << __func__ << " at line " << __LINE__ << " of file " << __FILE__ << std::endl;
 
-    // Pixmap pix = XCreatePixmap(dis, win, 1900, 1000, 24);
-    Pixmap pix = XCreatePixmap(dis, win, im.cols, im.rows, 32);
+    Pixmap pix = XCreatePixmap(dis, win, im.cols, im.rows, depth);
 
     std::cerr << "[DEBUG] Func " << __func__ << " at line " << __LINE__ << " of file " << __FILE__ << std::endl;
     
-    // XPutImage(dis, pix, gc, x_im, 0, 0, 0, 0, im.cols, im.rows);
-    XPutImage(dis, win, gc, x_im, 0, 0, 0, 0, im.cols, im.rows);
+    XPutImage(dis, pix, gc, x_im, 0, 0, 0, 0, im.cols, im.rows);
+
+    std::cerr << "[DEBUG] Func " << __func__ << " at line " << __LINE__ << " of file " << __FILE__ << std::endl;
 
     std::cerr << "[DEBUG] Func " << __func__ << " at line " << __LINE__ << " of file " << __FILE__ << std::endl;
     
-    // for(int i_r = 0; i_r < im.rows; i_r++){
+    XCopyArea(dis, pix, win, gc, 0, 0, 1900, 1000, 0, 0);
 
-    //     for(int i_c = 0; i_c < im.cols; i_c++){
-
-    //         v = im.at<cv::Vec3b>(i_r, i_c);
-
-    //         // scale from 1 byte to 2 byte
-    //         c.blue = ((uint16_t)v(0)) << 8;
-    //         c.green = ((uint16_t)v(1)) << 8;
-    //         c.red = ((uint16_t)v(2)) << 8;
-
-    //         c.flags = DoRed | DoGreen | DoBlue;
-
-    //         XAllocColor(dis, cmap, &c);
-
-    //         XSetForeground(dis, gc, c.pixel);
-
-    //         // XDrawPoint(dis, pix, gc, i_c, i_r);
-    //         XDrawPoint(dis, win, gc, i_c, i_r);
-    //     }
-    // }
-
-    std::cerr << "[DEBUG] Func " << __func__ << " at line " << __LINE__ << " of file " << __FILE__ << std::endl;
+    XFlush(dis);
     
-    // XCopyArea(dis, pix, win, gc, 0, 0, 1900, 1000, 0, 0);
-
-    
-
 }
 
 #endif
