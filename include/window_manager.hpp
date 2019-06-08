@@ -28,7 +28,8 @@ public:
         UPPER_DIR,
         LOWER_DIR,
         NEXT_DIR,
-        PREVIOUS_DIR
+        PREVIOUS_DIR,
+        REDRAW,
     }Command;
     
     WindowManager();

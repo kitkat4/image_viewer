@@ -31,7 +31,7 @@ WindowManager::WindowManager(const std::string& window_name)
 
     XSetStandardProperties(dis, win, "Hoge", "Fuga", None, NULL, 0, NULL);
 
-    XSelectInput(dis, win, ExposureMask | ButtonPressMask | KeyPressMask);
+    XSelectInput(dis, win, ExposureMask | ButtonPressMask | KeyPressMask | StructureNotifyMask);
 
     gc = XCreateGC(dis, win, 0, 0);
 
@@ -132,6 +132,9 @@ WindowManager::Command WindowManager::nextCommand()const{
             return NOTHING;
         }
         
+    }else if(x_event.type == ConfigureNotify){
+        std::cerr << "[DEBUG] Redrawing ... " << std::endl;
+        return REDRAW;
     }else{
         std::cerr << my_utils_kk4::yellow
                   << "[WARN ] Undefined event: " << x_event.type << " at line " << __LINE__

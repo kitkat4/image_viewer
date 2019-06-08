@@ -95,7 +95,9 @@ DirScanner* DirScanner::mainLoop(){
 
         Command c = wm->nextCommand();
 
-        if(c == Command::NEXT_IM || c == Command::PREVIOUS_IM){ 
+        if(c == Command::REDRAW){
+            wm->update(viewer->cur_im, viewer->cur_path);
+        }else if(c == Command::NEXT_IM || c == Command::PREVIOUS_IM){ 
 
             int check_count = 0;
                 
