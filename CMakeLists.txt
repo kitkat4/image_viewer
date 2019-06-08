@@ -13,13 +13,6 @@ link_directories(
 
 include_directories(include)
 find_package(OpenCV REQUIRED)
-find_package(Qt5 REQUIRED
-  Core
-  Gui
-  Widgets
-  Test
-  Concurrent)
-find_package(Threads)
 find_package(X11)
 
 add_executable(image_viewer
