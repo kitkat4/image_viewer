@@ -39,6 +39,7 @@ protected:
     std::string nextBrotherDir()const;
     std::string previousBrotherDir()const;
     static bool isImageFile(const std::string& path_str);
+    static bool compare_string(const std::string& lh, const std::string& rh);
 
     bool ok;
 

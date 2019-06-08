@@ -190,7 +190,7 @@ void DirScanner::scanEntries(){
         entries.push_back(itr.path().c_str());
     }
 
-    std::sort(entries.begin(), entries.end());
+    std::sort(entries.begin(), entries.end(), &compare_string);
 }
 
 void DirScanner::findFirstIm(){
@@ -319,6 +319,15 @@ bool DirScanner::isImageFile(const std::string& path_str){
         || ext == ".TIFF"
         || ext == ".TIF";
 
+}
+
+bool DirScanner::compare_string(const std::string& lh, const std::string& rh){
+
+    if(lh.length() != rh.length()){
+        return lh.length() < rh.length();
+    }else{
+        return lh < rh;
+    }
 }
 
 

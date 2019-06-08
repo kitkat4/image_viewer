@@ -39,24 +39,18 @@ void ImageViewer::enterMainLoop(){
             
         }else if(c == Command::NEXT_IM){
 
-            std::cerr << __FILE__ << __LINE__ << std::endl;
-            
             dir_scanner->goToNextIm();
 
             update();
             
         }else if(c == Command::PREVIOUS_IM){
 
-            std::cerr << __FILE__ << __LINE__ << std::endl;
-            
             dir_scanner->goToPreviousIm();
 
             update();
 
         }else if(c == Command::UPPER_DIR){
 
-            std::cerr << __FILE__ << __LINE__ << std::endl;
-            
             dir_scanner->goToParentDir();
             
             std::cerr << "[INFO ] Moving to " << dir_scanner->getCurrentDir() << std::endl;
