@@ -9,7 +9,7 @@ ImageViewer::ImageViewer(const std::string& path, const std::string& window_name
     cur_im = cur_im_original.clone();
     cur_path = path;
     wm.reset(new WindowManager(window_name, cur_im.cols, cur_im.rows));
-    wm->update(cur_im);
+    wm->update(cur_im, cur_path);
     
     cur_instance = new DirScanner(path);
 
@@ -57,7 +57,7 @@ void ImageViewer::enterMainLoop(){
             
             cur_instance->goToParentDir();
             
-            std::cerr << "[INFO ] Moving to " << cur_instance->getCurrentPath() << std::endl;
+            std::cerr << "[INFO ] Moving to " << cur_instance->getCurrentDir() << std::endl;
 
             update();
                 
@@ -65,7 +65,7 @@ void ImageViewer::enterMainLoop(){
 
             cur_instance->goToChildDir();
             
-            std::cerr << "[INFO ] Moving to " << cur_instance->getCurrentPath() << std::endl;
+            std::cerr << "[INFO ] Moving to " << cur_instance->getCurrentDir() << std::endl;
 
             update();            
             
@@ -73,7 +73,7 @@ void ImageViewer::enterMainLoop(){
 
             cur_instance->goToNextBrotherDir();
             
-            std::cerr << "[INFO ] Moving to " << cur_instance->getCurrentPath() << std::endl;
+            std::cerr << "[INFO ] Moving to " << cur_instance->getCurrentDir() << std::endl;
 
             update();
             
@@ -81,7 +81,7 @@ void ImageViewer::enterMainLoop(){
 
             cur_instance->goToPreviousBrotherDir();
             
-            std::cerr << "[INFO ] Moving to " << cur_instance->getCurrentPath() << std::endl;
+            std::cerr << "[INFO ] Moving to " << cur_instance->getCurrentDir() << std::endl;
 
             update();
         }else if(c == Command::QUIT){
@@ -110,13 +110,13 @@ void ImageViewer::update(){
                 cur_im = cur_im_original.clone();
             }
         }else{
-            cur_path = "";
+            cur_path = cur_instance->getCurrentDir();
             cur_im_original = cv::Mat();
             cur_im = cv::Mat();
         }
     }
     
-    wm->update(cur_im);
+    wm->update(cur_im, cur_path);
 }
 
 

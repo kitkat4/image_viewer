@@ -29,7 +29,7 @@ public:
     void goToChildDir();
     void goToNextBrotherDir();
     void goToPreviousBrotherDir();
-    std::string getCurrentPath()const;
+    std::string getCurrentDir()const;
 
     operator bool()const{
         return ok;

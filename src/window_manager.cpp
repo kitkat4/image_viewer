@@ -32,14 +32,25 @@ WindowManager::WindowManager(const std::string& window_name, const int width, co
     XMapRaised(dis, win);
 
     XFlush(dis);
+    
+    
+
 
     sleep(1);
 }
 
 WindowManager::~WindowManager(){}
 
-void WindowManager::update(const cv::Mat& im){
+void WindowManager::update(const cv::Mat& im, const std::string& current_path){
 
+    XStoreName(dis, win, current_path.c_str());
+
+    XChangeProperty(dis, win,
+                    XInternAtom(dis, "_NET_WM_NAME", False),
+                    XInternAtom(dis, "UTF8_STRING", False),
+                    8, PropModeReplace, (const unsigned char*)current_path.c_str(),
+                    strlen(current_path.c_str()));
+    
     if(im.empty()){
         XClearWindow(dis, win);
     }else{

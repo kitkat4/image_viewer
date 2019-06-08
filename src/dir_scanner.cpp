@@ -176,7 +176,7 @@ void DirScanner::goToPreviousBrotherDir(){
 }
 
 
-std::string DirScanner::getCurrentPath()const{
+std::string DirScanner::getCurrentDir()const{
 
     return cur_dir.generic_string();
 }
