@@ -85,20 +85,11 @@ WindowManager::Command WindowManager::nextCommand()const{
         case XK_q:
             return QUIT;
         default:
-            std::cerr << my_utils_kk4::yellow
-                      << "[WARN ] Undefined command: " << key_sym 
-                      << my_utils_kk4::default_color << std::endl;
             return NOTHING;
         }
         
     }else if(x_event.type == ConfigureNotify){
-        std::cerr << "[DEBUG] Redrawing ... " << std::endl;
         return REDRAW;
-    }else{
-        std::cerr << my_utils_kk4::yellow
-                  << "[WARN ] Undefined event: " << x_event.type << " at line " << __LINE__
-                  << " in " << __FILE__  << my_utils_kk4::default_color << std::endl;
-        return NOTHING;
     }
     
 }
@@ -128,8 +119,6 @@ void WindowManager::drawImage(const cv::Mat& im){
 
     const int depth = DefaultDepth(dis, screen);
 
-    std::cerr << depth << std::endl;
-    
     XWindowAttributes window_attributes;
     XGetWindowAttributes(dis, win, &window_attributes);
 

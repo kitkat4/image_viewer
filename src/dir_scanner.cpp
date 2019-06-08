@@ -187,6 +187,8 @@ void DirScanner::scanEntries(){
     for(auto& itr : fs::directory_iterator(cur_dir)){
         entries.push_back(itr.path().c_str());
     }
+
+    std::sort(entries.begin(), entries.end());
 }
 
 void DirScanner::findFirstIm(){
