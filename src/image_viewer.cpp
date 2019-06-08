@@ -84,6 +84,9 @@ void ImageViewer::enterMainLoop(){
             std::cerr << "[INFO ] Moving to " << cur_instance->getCurrentPath() << std::endl;
 
             update();
+        }else if(c == Command::QUIT){
+            wm->closeWindow();
+            return;
         }
 
         if(wm->isShutdown()){

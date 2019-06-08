@@ -26,6 +26,7 @@ public:
         NEXT_DIR,
         PREVIOUS_DIR,
         REDRAW,
+        QUIT
     }Command;
     
     WindowManager();

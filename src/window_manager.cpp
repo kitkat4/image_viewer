@@ -80,6 +80,8 @@ WindowManager::Command WindowManager::nextCommand()const{
             return PREVIOUS_DIR;
         case XK_Page_Down:
             return NEXT_DIR;
+        case XK_q:
+            return QUIT;
         default:
             std::cerr << my_utils_kk4::yellow
                       << "[WARN ] Undefined command: " << key_sym 
