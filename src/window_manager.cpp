@@ -153,8 +153,12 @@ void WindowManager::drawImage(const cv::Mat& im){
     XPutImage(dis, pix, gc, x_im, 0, 0, 0, 0, tmp_im.cols, tmp_im.rows);
 
     XClearWindow(dis, win);
+
+    const int upper_left_x = (window_attributes.width  - tmp_im.cols) / 2;
+    const int upper_left_y = (window_attributes.height - tmp_im.rows) / 2;
     
-    XCopyArea(dis, pix, win, gc, 0, 0, tmp_im.cols, tmp_im.rows, 0, 0);
+    XCopyArea(dis, pix, win, gc, 0, 0, tmp_im.cols, tmp_im.rows,
+              upper_left_x, upper_left_y);
 
     XFlush(dis);
     
