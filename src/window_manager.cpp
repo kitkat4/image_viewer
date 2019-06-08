@@ -118,44 +118,43 @@ void WindowManager::closeWindow(){
 
 void WindowManager::drawImage(const cv::Mat& im){
 
-    std::cerr << "[DEBUG] Called " << __func__ << std::endl;
-
-    std::cerr << "[DEBUG] Func " << __func__ << " at line " << __LINE__ << " of file " << __FILE__ << std::endl;
-
     XColor c;
     cv::Vec3b v;
     Colormap cmap = XDefaultColormap(dis, screen);
 
-    
-
-    std::cerr << "[DEBUG] Func " << __func__ << " at line " << __LINE__ << " of file " << __FILE__ << std::endl;
-
-
-    std::cerr << "[DEBUG] Default depth: " << DefaultDepth(dis, screen) << std::endl;
     const int depth = DefaultDepth(dis, screen);
+    
+    XWindowAttributes window_attributes;
+    XGetWindowAttributes(dis, win, &window_attributes);
+
+    const double scale_v = (double)window_attributes.height / im.rows;
+    const double scale_h = (double)window_attributes.width / im.cols;
+    double scale = 1.0;
+
+    // calc min(1.0, scale_v, scale_h)
+    if(scale_v < scale){
+        scale = scale_v;
+    }
+    if(scale_h < scale){
+        scale = scale_h;
+    }
 
     cv::Mat tmp_im;
-    cv::cvtColor(im, tmp_im, CV_BGR2BGRA);
+    cv::resize(im, tmp_im, cv::Size(0, 0), scale, scale);
+    
+    cv::cvtColor(tmp_im, tmp_im, CV_BGR2BGRA);
+    
     XImage *x_im = XCreateImage(dis, CopyFromParent, depth,
                                 ZPixmap, 0, (char*)tmp_im.data,
-                                im.cols, im.rows, 32, 0);
+                                tmp_im.cols, tmp_im.rows, 32, 0);
 
-
-    std::cerr << "[DEBUG] Func " << __func__ << " at line " << __LINE__ << " of file " << __FILE__ << std::endl;
-
-    Pixmap pix = XCreatePixmap(dis, win, im.cols, im.rows, depth);
-
-    std::cerr << "[DEBUG] Func " << __func__ << " at line " << __LINE__ << " of file " << __FILE__ << std::endl;
+    Pixmap pix = XCreatePixmap(dis, win, tmp_im.cols, tmp_im.rows, depth);
     
-    XPutImage(dis, pix, gc, x_im, 0, 0, 0, 0, im.cols, im.rows);
-
-    std::cerr << "[DEBUG] Func " << __func__ << " at line " << __LINE__ << " of file " << __FILE__ << std::endl;
-
-    std::cerr << "[DEBUG] Func " << __func__ << " at line " << __LINE__ << " of file " << __FILE__ << std::endl;
+    XPutImage(dis, pix, gc, x_im, 0, 0, 0, 0, tmp_im.cols, tmp_im.rows);
 
     XClearWindow(dis, win);
     
-    XCopyArea(dis, pix, win, gc, 0, 0, im.cols, im.rows, 0, 0);
+    XCopyArea(dis, pix, win, gc, 0, 0, tmp_im.cols, tmp_im.rows, 0, 0);
 
     XFlush(dis);
     
