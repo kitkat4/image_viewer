@@ -44,12 +44,15 @@ WindowManager::WindowManager(const std::string& window_name, const int width, co
 
 WindowManager::~WindowManager(){}
 
-void WindowManager::update(const cv::Mat& im, const std::string& current_path){
+void WindowManager::update(const cv::Mat& im){
 
     std::cerr << "[DEBUG] Called " << __func__ << std::endl;
 
-    drawImage(im);
-    
+    if(im.empty()){
+        XClearWindow(dis, win);
+    }else{
+        drawImage(im);
+    }
 }
 
 WindowManager::Command WindowManager::nextCommand()const{

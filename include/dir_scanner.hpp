@@ -17,34 +17,41 @@ using Command = WindowManager::Command;
 class ImageViewer;
 
 class DirScanner{
-    friend class ImageViewer;
-protected:
-
-    DirScanner(const std::string& path, const std::string& window_name,
-               ImageViewer* const viewer, WindowManager* const wm);
+    // friend class ImageViewer;
+public:
+    DirScanner(const std::string& path);
     ~DirScanner();
+
+    std::string getCurrentIm()const;
+    std::string goToNextIm();
+    std::string goToPreviousIm();
+    void goToParentDir();
+    void goToChildDir();
+    void goToNextBrotherDir();
+    void goToPreviousBrotherDir();
+    std::string getCurrentPath()const;
+
     operator bool()const{
         return ok;
     }
-    DirScanner* mainLoop();
+    
+protected:
+
+    void scanEntries();
+    void findFirstIm();
 
     std::string nextBrotherDir()const;
     std::string previousBrotherDir()const;
     static bool isImageFile(const std::string& path_str);
 
-    const std::string window_name;
-
     bool ok;
-
-    
 
     std::vector<std::string> entries;
     
     fs::path cur_dir;
+    std::vector<fs::path> child_dir_history;
+    
     int im_ix;
-
-    ImageViewer* const viewer;
-    WindowManager* wm;
 };
 
 

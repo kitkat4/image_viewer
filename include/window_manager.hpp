@@ -32,7 +32,7 @@ public:
     WindowManager(const std::string& window_name, const int width, const int height);
     ~WindowManager();
 
-    void update(const cv::Mat& im, const std::string& current_path);
+    void update(const cv::Mat& im);
     Command nextCommand()const;
     bool isShutdown()const;
     void closeWindow();
@@ -47,7 +47,6 @@ protected:
     int screen;
     Window win;
     GC gc;
-    
 };
 
 

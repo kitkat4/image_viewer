@@ -2,177 +2,209 @@
 
 
 
-DirScanner::DirScanner(const std::string& path, const std::string& window_name,
-                       ImageViewer* const viewer, WindowManager* const wm)
-    :ok(true), cur_dir(fs::path()),
-     im_ix(0), window_name(window_name), viewer(viewer), wm(wm){
+DirScanner::DirScanner(const std::string& path)
+    :ok(false), cur_dir(fs::path()), im_ix(-1){
 
-    if(fs::is_regular_file(path)){ // image path
-
-        viewer->cur_im_original = cv::imread(path);
-        viewer->cur_im = viewer->cur_im_original.clone();
-        viewer->cur_path = fs::path(path).generic_string();
-
-
-        if(viewer->cur_im.empty()){
-            std::cerr << my_utils_kk4::red
-                      << "[ERROR] Failed to open " << path
-                      << my_utils_kk4::default_color
-                      << std::endl;
-            ok = false;
-        }
-
-        fs::path im_path(path);
-
-        cur_dir = im_path.parent_path();
-
-        entries.clear();
-        int i = 0;
-        for(auto& itr : fs::directory_iterator(cur_dir)){
-            fs::path tmp = itr.path();
-            if(tmp.compare(im_path) == 0){
-                im_ix = i;
-            }
-            entries.push_back(tmp.c_str());
-            i++;
-        }
-            
-    }else{                      // directory path
-
+    if(! fs::is_regular_file(fs::path(path))){ // directory given
         cur_dir.assign(path);
-
-        im_ix = -1;
-
-        entries.clear();
-        int i = 0;
-        for(auto& itr : fs::directory_iterator(cur_dir)){
-            fs::path tmp = itr.path();
-            if(im_ix == -1){
-                if(fs::is_regular_file(tmp) && isImageFile(tmp.c_str())){
-                    viewer->cur_im_original = cv::imread(tmp.c_str());
-                    viewer->cur_im = viewer->cur_im_original.clone();
-                    viewer->cur_path = tmp.generic_string();
-                    if(! viewer->cur_im.empty()){
-                        im_ix = i;
-                    }
+        scanEntries();
+        findFirstIm();
+    }else{                      // image given
+        if(isImageFile(path)){
+            cur_dir.assign(fs::path(path).parent_path());
+            scanEntries();
+            
+            // check the im_ix of the given image
+            for(int i = 0; i < (int)entries.size(); i++){
+                if(fs::path(entries[i]).filename() == fs::path(path).filename()){
+                    im_ix = i;
+                    ok = true;
+                    break;
                 }
             }
-            entries.push_back(tmp.c_str());
-            i++;
-        }
-
-        if(im_ix == -1){
-            std::cerr << my_utils_kk4::yellow
-                      << "[WARN ] No valid image found"
+        }else{
+            std::cerr << my_utils_kk4::red
+                      << "[ERROR] The given path is not directory nor image file"
                       << my_utils_kk4::default_style << std::endl;
-            // cv::cvtColor(viewer->cur_im_original, viewer->cur_im, CV_RGB2GRAY);
-            viewer->cur_im = cv::Mat::zeros(viewer->cur_im_original.size(), CV_8UC4);
-            viewer->cur_path = cur_dir.generic_string();
-            // cv::putText(viewer->cur_im, path, cv::Point(200,200), cv::FONT_HERSHEY_SIMPLEX, 4.0,
-            //             cv::Scalar(255,255,255), 4, 8, false);
-            ok = false;
         }
-
     }
-
 }
 
 
 DirScanner::~DirScanner(){
 }
 
-DirScanner* DirScanner::mainLoop(){
+std::string DirScanner::getCurrentIm()const{
 
-    // cv::setWindowProperty(window_name, CV_WND_PROP_ASPECTRATIO, CV_WINDOW_KEEPRATIO);
+    if(entries.size() > 0){
+        return entries[im_ix];
+    }else{
+        std::cerr << my_utils_kk4::red
+                  << "[ERROR] No images found."
+                  << my_utils_kk4::default_style << std::endl;
+        return "";
+    }
+}
 
-    std::cerr << "[DEBUG] Called " << __func__ << std::endl;
+std::string DirScanner::goToNextIm(){
 
+    int check_count = 0;
 
-    wm->update(viewer->cur_im, viewer->cur_path);
-
-    
+    const int old_im_ix = im_ix;
+                
     while(true){
 
-        Command c = wm->nextCommand();
-
-        if(c == Command::REDRAW){
-            wm->update(viewer->cur_im, viewer->cur_path);
-        }else if(c == Command::NEXT_IM || c == Command::PREVIOUS_IM){ 
-
-            int check_count = 0;
-                
-            while(true){
-
-                check_count++;
-
-                if(check_count > (int)entries.size()){
-                    break;
-                }
-                
-                if(c == Command::NEXT_IM){
-                    im_ix++;
-                }else if(c == Command::PREVIOUS_IM){
-                    im_ix--;
-                }
-            
-                if(im_ix >= (int)entries.size()){
-                    im_ix = 0;
-                }else if(im_ix < 0){
-                    im_ix = entries.size() - 1;
-                }
-
-                if((! fs::is_regular_file(entries[im_ix])) || (! isImageFile(entries[im_ix]))){
-                    continue;
-                }
-
-                viewer->cur_im_original = cv::imread(entries[im_ix]);
-                viewer->cur_im = viewer->cur_im_original.clone();
-                viewer->cur_path = entries[im_ix];
-
-                
-
-                if(! viewer->cur_im.empty()){
-                    break;
-                }
-
-            }
-
-            wm->update(viewer->cur_im, viewer->cur_path);
-            
-                
-            continue;
-
-        }else if(c == Command::UPPER_DIR){
-            fs::path p = cur_dir.parent_path();
-            if(p.generic_string().size() > 0){
-                std::cerr << "[INFO ] Moving to " << cur_dir.parent_path() << std::endl;
-                return new DirScanner(cur_dir.parent_path(), window_name, viewer, wm);
-            }else{
-                std::cerr << my_utils_kk4::red
-                          << "[ERROR] Unexpected error at line " << __LINE__ 
-                          << " in " << __FILE__
-                          << my_utils_kk4::default_style << std::endl;
-            }
-        }else if(c == Command::LOWER_DIR){
-            for(auto& itr : entries){
-                if(! fs::is_regular_file(itr)){
-                    std::cerr << "[INFO ] Moving to " << itr << std::endl;
-                    return new DirScanner(itr, window_name, viewer, wm);
-                }
-            }
-        }else if(c == Command::NEXT_DIR){
-            std::cerr << "[INFO ] Moving to " << nextBrotherDir() << std::endl;
-            return new DirScanner(nextBrotherDir(), window_name, viewer, wm);
-        }else if(c == Command::PREVIOUS_DIR){
-            std::cerr << "[INFO ] Moving to " << previousBrotherDir() << std::endl;
-            return new DirScanner(previousBrotherDir(), window_name, viewer, wm);
+        // no image found
+        if(check_count >= (int)entries.size()){
+            std::cerr << my_utils_kk4::red
+                      << "[ERROR] Unexpected error occured while searching the next image, "
+                      << "at line " << __LINE__ << " in " << __FILE__
+                      << my_utils_kk4::default_style << std::endl;
+            ok = false;
+            im_ix = -1;
+            return "";
         }
-
-        if(wm->isShutdown()){
-            return nullptr;
+                
+        im_ix++;
+            
+        if(im_ix >= (int)entries.size()){
+            im_ix = 0;
         }
         
+        if(fs::is_regular_file(fs::path(entries[im_ix])) && isImageFile(entries[im_ix])){
+            if(im_ix == old_im_ix){
+                std::cerr << "[INFO ] Image search finished, but no new images found."
+                          << std::endl;
+            }
+            ok = true;
+            return entries[im_ix];
+        }
+
+        check_count++;
     }
+    
+}
+
+std::string DirScanner::goToPreviousIm(){
+
+    int check_count = 0;
+
+    const int old_im_ix = im_ix;
+                
+    while(true){
+
+        // no image found
+        if(check_count >= (int)entries.size()){
+            std::cerr << my_utils_kk4::red
+                      << "[ERROR] Unexpected error occured while searching the next image, "
+                      << "at line " << __LINE__ << " in " << __FILE__
+                      << my_utils_kk4::default_style << std::endl;
+            ok = false;
+            im_ix = -1;
+            return "";
+        }
+                
+        im_ix--;
+            
+        if(im_ix < 0){
+            im_ix = entries.size() - 1;
+        }
+        
+        if(fs::is_regular_file(fs::path(entries[im_ix])) && isImageFile(entries[im_ix])){
+            
+            if(im_ix == old_im_ix){
+                std::cerr << "[INFO ] Image search finished, but no new images found."
+                          << std::endl;
+            }
+            ok = true;
+            return entries[im_ix];
+        }
+
+        check_count++;
+    }
+}
+
+void DirScanner::goToParentDir(){
+
+    child_dir_history.push_back(cur_dir);
+    cur_dir = cur_dir.parent_path();
+
+    scanEntries();
+    findFirstIm();
+}
+
+void DirScanner::goToChildDir(){
+
+    if(! child_dir_history.empty()){
+
+        cur_dir = child_dir_history.back();
+        child_dir_history.pop_back();
+        scanEntries();
+        findFirstIm();
+        
+    }else{
+        for(auto& itr : entries){
+            if(! fs::is_regular_file(fs::path(itr))){
+                
+                cur_dir.assign(itr);
+                scanEntries();
+                findFirstIm();
+                break;
+            }
+        }
+    }
+}
+
+void DirScanner::goToNextBrotherDir(){
+
+    child_dir_history.clear();
+
+    cur_dir.assign(nextBrotherDir());
+
+    scanEntries();
+    findFirstIm();
+}
+
+void DirScanner::goToPreviousBrotherDir(){
+
+    child_dir_history.clear();
+
+    cur_dir.assign(previousBrotherDir());
+
+    scanEntries();
+    findFirstIm();
+}
+
+
+std::string DirScanner::getCurrentPath()const{
+
+    return cur_dir.generic_string();
+}
+
+void DirScanner::scanEntries(){
+
+    entries.clear();
+    for(auto& itr : fs::directory_iterator(cur_dir)){
+        entries.push_back(itr.path().c_str());
+    }
+}
+
+void DirScanner::findFirstIm(){
+
+    for(int i = 0; i < (int)entries.size(); i++){
+
+        if(fs::is_regular_file(fs::path(entries[i])) && isImageFile(entries[i])){
+            im_ix = i;
+            ok = true;
+            return;
+        }
+    }
+
+    std::cerr << my_utils_kk4::yellow
+              << "[WARN ] No valid image found"
+              << my_utils_kk4::default_style << std::endl;
+    ok = false;
+    im_ix = -1;
 }
 
 std::string DirScanner::nextBrotherDir()const{
@@ -186,11 +218,11 @@ std::string DirScanner::nextBrotherDir()const{
     bool finish = false;
     std::string first_found_path;
     for(auto& itr: fs::directory_iterator(p)){
-        if(first_found_path.empty() && ! fs::is_regular_file(itr)){
+        if(first_found_path.empty() && ! fs::is_regular_file(itr.path())){
             first_found_path = itr.path().generic_string();
         }
         if(finish){
-            if(! fs::is_regular_file(itr)){
+            if(! fs::is_regular_file(itr.path())){
                 return itr.path().generic_string();
             }
         }else{
@@ -203,6 +235,9 @@ std::string DirScanner::nextBrotherDir()const{
     if(finish){
         return first_found_path;
     }else{
+        std::cerr << my_utils_kk4::red
+                  << "[ERROR] Unexpected error occured at line " << __LINE__
+                  << " in " << __FILE__ << my_utils_kk4::default_style << std::endl;
         return cur_dir.generic_string();
     }
 }
@@ -215,25 +250,29 @@ std::string DirScanner::previousBrotherDir()const{
         return cur_dir.generic_string();
     }
 
-    fs::path tmp_path = cur_dir;
+    fs::path prev_path;
+
+    // find last dir
     for(auto& itr: fs::directory_iterator(p)){
         if(! fs::is_regular_file(itr.path())){
-            tmp_path = itr.path();
+            prev_path = itr.path();
         }
     }
-
-    fs::path prev_path = cur_dir;
+    
     for(auto& itr: fs::directory_iterator(p)){
-        if(! fs::is_regular_file(tmp_path)){
-            prev_path = tmp_path;
-        }
-        tmp_path = itr.path();
-        if(tmp_path == cur_dir){
+        
+        if(itr.path() == cur_dir){
             return prev_path.generic_string();
+        }else if(! fs::is_regular_file(itr.path())){
+            prev_path = itr.path();
         }
     }
 
+    std::cerr << my_utils_kk4::red
+              << "[ERROR] Unexpected error occured at line " << __LINE__
+              << " in " << __FILE__ << my_utils_kk4::default_style << std::endl;
     return cur_dir.generic_string();
+
 }
 
 

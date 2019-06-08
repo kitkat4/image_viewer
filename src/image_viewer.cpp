@@ -5,11 +5,14 @@
 ImageViewer::ImageViewer(const std::string& path, const std::string& window_name)
     :window_name(window_name){
 
-    cur_instance = new DirScanner(path, window_name, this, nullptr);
-
+    cur_im_original = cv::imread(path);
+    cur_im = cur_im_original.clone();
+    cur_path = path;
     wm.reset(new WindowManager(window_name, cur_im.cols, cur_im.rows));
+    wm->update(cur_im);
+    
+    cur_instance = new DirScanner(path);
 
-    cur_instance->wm = wm.get();
 }
 
 ImageViewer::~ImageViewer(){
@@ -31,16 +34,86 @@ void ImageViewer::enterMainLoop(){
     DirScanner* new_instance;
     
     while(true){
-        new_instance = cur_instance->mainLoop();
-        if(new_instance != cur_instance){
-            delete cur_instance;
-            cur_instance = new_instance;
+
+        Command c = wm->nextCommand();
+
+        if(c == Command::REDRAW){
+            
+            update();
+            
+        }else if(c == Command::NEXT_IM){
+            
+            cur_instance->goToNextIm();
+
+            update();
+            
+        }else if(c == Command::PREVIOUS_IM){
+            
+            cur_instance->goToPreviousIm();
+
+            update();
+
+        }else if(c == Command::UPPER_DIR){
+            
+            cur_instance->goToParentDir();
+            
+            std::cerr << "[INFO ] Moving to " << cur_instance->getCurrentPath() << std::endl;
+
+            update();
+                
+        }else if(c == Command::LOWER_DIR){
+
+            cur_instance->goToChildDir();
+            
+            std::cerr << "[INFO ] Moving to " << cur_instance->getCurrentPath() << std::endl;
+
+            update();            
+            
+        }else if(c == Command::NEXT_DIR){
+
+            cur_instance->goToNextBrotherDir();
+            
+            std::cerr << "[INFO ] Moving to " << cur_instance->getCurrentPath() << std::endl;
+
+            update();
+            
+        }else if(c == Command::PREVIOUS_DIR){
+
+            cur_instance->goToPreviousBrotherDir();
+            
+            std::cerr << "[INFO ] Moving to " << cur_instance->getCurrentPath() << std::endl;
+
+            update();
         }
-        
-        if(! new_instance){
+
+        if(wm->isShutdown()){
             wm->closeWindow();
             return;
         }
-    }
+    } // end of while
 }
+
+void ImageViewer::update(){
+
+    if(cur_instance){
+
+        if(*cur_instance){
+            std::string tmp_path = cur_instance->getCurrentIm();
+
+            if(tmp_path != cur_path){
+
+                cur_path = tmp_path;
+                cur_im_original = cv::imread(cur_path);
+                cur_im = cur_im_original.clone();
+            }
+        }else{
+            cur_path = "";
+            cur_im_original = cv::Mat();
+            cur_im = cv::Mat();
+        }
+    }
+    
+    wm->update(cur_im);
+}
+
 

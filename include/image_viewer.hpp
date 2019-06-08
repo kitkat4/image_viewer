@@ -21,6 +21,9 @@ public:
     void enterMainLoop();
 
 protected:
+
+    void update();
+    
     const std::string window_name;
     bool window_opened;
     DirScanner* cur_instance;
