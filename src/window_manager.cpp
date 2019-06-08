@@ -1,9 +1,10 @@
 #include "window_manager.hpp"
 
-WindowManager::WindowManager(){}
+WindowManager::WindowManager():
+    tile_size(64){}
 
 WindowManager::WindowManager(const std::string& window_name, const int width, const int height)
-    :window_name(window_name){
+    :window_name(window_name), tile_size(64){
 
 
     dis = XOpenDisplay(nullptr);
@@ -18,20 +19,14 @@ WindowManager::WindowManager(const std::string& window_name, const int width, co
     
     screen = DefaultScreen(dis);
 
-    unsigned long black = BlackPixel(dis, screen);
-    unsigned long white = WhitePixel(dis, screen);
-
     win = XCreateSimpleWindow(dis, RootWindow(dis, screen), 0, 0, width, height,
-                              5, white, black);
-
-    XSetStandardProperties(dis, win, "Hoge", "Fuga", None, NULL, 0, NULL);
+                              5, None, None);
 
     XSelectInput(dis, win, ExposureMask | ButtonPressMask | KeyPressMask | StructureNotifyMask);
 
     gc = XCreateGC(dis, win, 0, 0);
 
-    XSetBackground(dis,gc,white);
-	XSetForeground(dis,gc,black);
+    setDefaultBackground();
 
     XClearWindow(dis, win);
     XMapRaised(dis, win);
@@ -39,14 +34,11 @@ WindowManager::WindowManager(const std::string& window_name, const int width, co
     XFlush(dis);
 
     sleep(1);
-
 }
 
 WindowManager::~WindowManager(){}
 
 void WindowManager::update(const cv::Mat& im){
-
-    std::cerr << "[DEBUG] Called " << __func__ << std::endl;
 
     if(im.empty()){
         XClearWindow(dis, win);
@@ -63,7 +55,6 @@ WindowManager::Command WindowManager::nextCommand()const{
 
     if(x_event.type == KeyPress){
         
-        // KeySym key_sym = XKeycodeToKeysym(dis, x_event.xkey.keycode, 0);
         KeySym key_sym = XkbKeycodeToKeysym(dis, x_event.xkey.keycode, 0,
                                             x_event.xkey.state & ShiftMask ? 1 : 0);
         
@@ -125,6 +116,8 @@ void WindowManager::drawImage(const cv::Mat& im){
     Colormap cmap = XDefaultColormap(dis, screen);
 
     const int depth = DefaultDepth(dis, screen);
+
+    std::cerr << depth << std::endl;
     
     XWindowAttributes window_attributes;
     XGetWindowAttributes(dis, win, &window_attributes);
@@ -166,3 +159,53 @@ void WindowManager::drawImage(const cv::Mat& im){
     
 }
 
+void WindowManager::setDefaultBackground(){
+
+    const int depth = DefaultDepth(dis, screen);
+
+    int width, height;
+    {
+        XWindowAttributes window_attributes;
+        XGetWindowAttributes(dis, win, &window_attributes);
+        width = window_attributes.width;
+        height = window_attributes.height;
+    }
+
+    const int width_big = width % tile_size ? (width / tile_size + 1) * tile_size : width;
+    const int height_big = height % tile_size ? (height / tile_size + 1) * tile_size : height;
+
+    std::vector<XRectangle> rectangles;
+    
+    for(int i_v = 0; i_v < height_big / tile_size; i_v++){
+        int count = i_v % 2;
+        for(int i_h = 0; i_h < width_big / tile_size; i_h++){
+            if(count % 2){
+                XRectangle tmp_rect;
+                tmp_rect.x = i_h * tile_size;
+                tmp_rect.y = i_v * tile_size;
+                tmp_rect.width  = tile_size;
+                tmp_rect.height = tile_size;
+                rectangles.push_back(tmp_rect);
+            }
+            count++;
+        }
+    }
+
+
+    XColor gray1, gray2;
+    gray1.red = gray1.green = gray1.blue = 0x4f00;
+    gray2.red = gray2.green = gray2.blue = 0x4000;
+    gray1.flags = gray2.flags = DoRed | DoGreen | DoBlue;
+    XAllocColor(dis, XDefaultColormap(dis, screen), &gray1);
+    XAllocColor(dis, XDefaultColormap(dis, screen), &gray2);
+    
+    Pixmap pix = XCreatePixmap(dis, win, width, height, depth);
+
+    XSetForeground(dis, gc, gray1.pixel);
+    XFillRectangle(dis, pix, gc, 0, 0, width, height);
+
+    XSetForeground(dis, gc, gray2.pixel);
+    XFillRectangles(dis, pix, gc, rectangles.data(), (int)rectangles.size());
+
+    XSetWindowBackgroundPixmap(dis, win, pix);    
+}

@@ -43,11 +43,14 @@ protected:
     std::string window_name;
 
     void drawImage(const cv::Mat& im);
+    void setDefaultBackground();
 
     Display * dis;
     int screen;
     Window win;
     GC gc;
+
+    int tile_size;
 };
 
 
