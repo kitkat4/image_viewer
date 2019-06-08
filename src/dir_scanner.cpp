@@ -62,9 +62,11 @@ DirScanner::DirScanner(const std::string& path, const std::string& window_name,
         }
 
         if(im_ix == -1){
-            std::cerr << "[WARNING] No valid image found" << std::endl;
+            std::cerr << my_utils_kk4::yellow
+                      << "[WARN ] No valid image found"
+                      << my_utils_kk4::default_style << std::endl;
             // cv::cvtColor(viewer->cur_im_original, viewer->cur_im, CV_RGB2GRAY);
-            viewer->cur_im = cv::Mat::zeros(viewer->cur_im_original.size(), CV_8U);
+            viewer->cur_im = cv::Mat::zeros(viewer->cur_im_original.size(), CV_8UC4);
             viewer->cur_path = cur_dir.generic_string();
             // cv::putText(viewer->cur_im, path, cv::Point(200,200), cv::FONT_HERSHEY_SIMPLEX, 4.0,
             //             cv::Scalar(255,255,255), 4, 8, false);
@@ -87,6 +89,7 @@ DirScanner* DirScanner::mainLoop(){
 
 
     wm->update(viewer->cur_im, viewer->cur_path);
+
     
     while(true){
 
@@ -139,17 +142,26 @@ DirScanner* DirScanner::mainLoop(){
         }else if(c == Command::UPPER_DIR){
             fs::path p = cur_dir.parent_path();
             if(p.generic_string().size() > 0){
+                std::cerr << "[INFO ] Moving to " << cur_dir.parent_path() << std::endl;
                 return new DirScanner(cur_dir.parent_path(), window_name, viewer, wm);
+            }else{
+                std::cerr << my_utils_kk4::red
+                          << "[ERROR] Unexpected error at line " << __LINE__ 
+                          << " in " << __FILE__
+                          << my_utils_kk4::default_style << std::endl;
             }
         }else if(c == Command::LOWER_DIR){
             for(auto& itr : entries){
                 if(! fs::is_regular_file(itr)){
+                    std::cerr << "[INFO ] Moving to " << itr << std::endl;
                     return new DirScanner(itr, window_name, viewer, wm);
                 }
             }
         }else if(c == Command::NEXT_DIR){
+            std::cerr << "[INFO ] Moving to " << nextBrotherDir() << std::endl;
             return new DirScanner(nextBrotherDir(), window_name, viewer, wm);
         }else if(c == Command::PREVIOUS_DIR){
+            std::cerr << "[INFO ] Moving to " << previousBrotherDir() << std::endl;
             return new DirScanner(previousBrotherDir(), window_name, viewer, wm);
         }
 

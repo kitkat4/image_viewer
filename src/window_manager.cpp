@@ -84,26 +84,60 @@ WindowManager::Command WindowManager::nextCommand()const{
     case 'Q':                   // left
         return PREVIOUS_IM;
     case 'R':                   // up
-        return PREVIOUS_DIR;
-    case 'T':                   // down
-        return NEXT_DIR;
-    case 'U':                   // PgUp
         return UPPER_DIR;
-    case 'V':                   // PgDn
+    case 'T':                   // down
         return LOWER_DIR;
+    case 'U':                   // PgUp
+        return PREVIOUS_DIR;
+    case 'V':                   // PgDn
+        return NEXT_DIR;
     case -1:
         return NOTHING;
     default:
         std::cerr << my_utils_kk4::yellow
-                  << "[WARNING] " << c << " is an undefined command"
+                  << "[WARN ] Undefined command: " << c 
                   << my_utils_kk4::default_color << std::endl;
         return NOTHING;
     }
     
 #elif defined IMAGE_VIEWER_WITH_X11_WINDOW
-    
 
-    // do something
+    XEvent x_event;
+    
+    XNextEvent(dis, &x_event);
+
+    if(x_event.type == KeyPress){
+        
+        // KeySym key_sym = XKeycodeToKeysym(dis, x_event.xkey.keycode, 0);
+        KeySym key_sym = XkbKeycodeToKeysym(dis, x_event.xkey.keycode, 0,
+                                            x_event.xkey.state & ShiftMask ? 1 : 0);
+        
+        switch(key_sym){
+        case XK_Right:
+            return NEXT_IM;
+        case XK_Left:
+            return PREVIOUS_IM;
+        case XK_Up:
+            return UPPER_DIR;
+        case XK_Down:
+            return LOWER_DIR;
+        case XK_Page_Up:
+            return PREVIOUS_DIR;
+        case XK_Page_Down:
+            return NEXT_DIR;
+        default:
+            std::cerr << my_utils_kk4::yellow
+                      << "[WARN ] Undefined command: " << key_sym 
+                      << my_utils_kk4::default_color << std::endl;
+            return NOTHING;
+        }
+        
+    }else{
+        std::cerr << my_utils_kk4::yellow
+                  << "[WARN ] Undefined event: " << x_event.type << " at line " << __LINE__
+                  << " in " << __FILE__  << my_utils_kk4::default_color << std::endl;
+        return NOTHING;
+    }
     
 #endif
     
