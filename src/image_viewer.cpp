@@ -3,9 +3,13 @@
 
 
 ImageViewer::ImageViewer(const std::string& path, const std::string& window_name)
-    :window_name(window_name), wm(new WindowManager(window_name)){
+    :window_name(window_name){
 
-    cur_instance = new DirScanner(path, window_name, this, wm.get());
+    cur_instance = new DirScanner(path, window_name, this, nullptr);
+
+    wm.reset(new WindowManager(window_name, cur_im.cols, cur_im.rows));
+
+    cur_instance->wm = wm.get();
 }
 
 ImageViewer::~ImageViewer(){
@@ -15,11 +19,6 @@ ImageViewer::~ImageViewer(){
 void ImageViewer::enterMainLoop(){
 
     std::cerr << "[DEBUG] Called " << __func__ << std::endl;
-
-    // if(! window_opened){
-    //     window_opened = true;
-    //     WindowManager wm(window_name);
-    // }
     
     if(! cur_instance){
         std::cerr << my_utils_kk4::red

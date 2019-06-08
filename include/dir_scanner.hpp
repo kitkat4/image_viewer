@@ -44,7 +44,7 @@ protected:
     int im_ix;
 
     ImageViewer* const viewer;
-    WindowManager* const wm;
+    WindowManager* wm;
 };
 
 

@@ -4,15 +4,11 @@
 
 #include <opencv2/opencv.hpp>
 
-#ifdef IMAGE_VIEWER_WITH_X11_WINDOW
-
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <X11/Xos.h>
 #include <X11/keysym.h>
 #include <X11/XKBlib.h>
-
-#endif
 
 
 #include <string>
@@ -33,7 +29,7 @@ public:
     }Command;
     
     WindowManager();
-    WindowManager(const std::string& window_name);
+    WindowManager(const std::string& window_name, const int width, const int height);
     ~WindowManager();
 
     void update(const cv::Mat& im, const std::string& current_path);
@@ -45,8 +41,6 @@ protected:
 
     std::string window_name;
 
-#ifdef IMAGE_VIEWER_WITH_X11_WINDOW
-
     void drawImage(const cv::Mat& im);
 
     Display * dis;
@@ -54,9 +48,6 @@ protected:
     Window win;
     GC gc;
     
-    
-#endif
-
 };
 
 

@@ -128,7 +128,8 @@ DirScanner* DirScanner::mainLoop(){
                 viewer->cur_im_original = cv::imread(entries[im_ix]);
                 viewer->cur_im = viewer->cur_im_original.clone();
                 viewer->cur_path = entries[im_ix];
-            
+
+                
 
                 if(! viewer->cur_im.empty()){
                     break;
