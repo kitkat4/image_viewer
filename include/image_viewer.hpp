@@ -26,7 +26,7 @@ protected:
     
     const std::string window_name;
     bool window_opened;
-    DirScanner* cur_instance;
+    DirScanner* dir_scanner;
     std::unique_ptr<WindowManager> wm;
     cv::Mat cur_im;
     cv::Mat cur_im_original;

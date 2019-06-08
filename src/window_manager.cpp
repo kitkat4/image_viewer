@@ -27,16 +27,17 @@ WindowManager::WindowManager(const std::string& window_name, const int width, co
     gc = XCreateGC(dis, win, 0, 0);
 
     setDefaultBackground();
-
-    XClearWindow(dis, win);
+    
     XMapRaised(dis, win);
 
-    XFlush(dis);
-    
-    
-
-
-    sleep(1);
+    while(true){
+        XEvent x_event;
+        XNextEvent(dis, &x_event);
+        if(x_event.type == Expose){
+            XClearWindow(dis, win);
+            break;
+        }
+    }
 }
 
 WindowManager::~WindowManager(){}
@@ -90,6 +91,8 @@ WindowManager::Command WindowManager::nextCommand()const{
         
     }else if(x_event.type == ConfigureNotify){
         return REDRAW;
+    }else{
+        return NOTHING;
     }
     
 }

@@ -11,7 +11,7 @@ ImageViewer::ImageViewer(const std::string& path, const std::string& window_name
     wm.reset(new WindowManager(window_name, cur_im.cols, cur_im.rows));
     wm->update(cur_im, cur_path);
     
-    cur_instance = new DirScanner(path);
+    dir_scanner = new DirScanner(path);
 
 }
 
@@ -21,17 +21,13 @@ ImageViewer::~ImageViewer(){
 
 void ImageViewer::enterMainLoop(){
 
-    std::cerr << "[DEBUG] Called " << __func__ << std::endl;
-    
-    if(! cur_instance){
+    if(! dir_scanner){
         std::cerr << my_utils_kk4::red
                   << "[ERROR] No instance created"
                   << my_utils_kk4::default_color
                   << std::endl;
         return;
     }
-    
-    DirScanner* new_instance;
     
     while(true){
 
@@ -42,46 +38,52 @@ void ImageViewer::enterMainLoop(){
             update();
             
         }else if(c == Command::NEXT_IM){
+
+            std::cerr << __FILE__ << __LINE__ << std::endl;
             
-            cur_instance->goToNextIm();
+            dir_scanner->goToNextIm();
 
             update();
             
         }else if(c == Command::PREVIOUS_IM){
+
+            std::cerr << __FILE__ << __LINE__ << std::endl;
             
-            cur_instance->goToPreviousIm();
+            dir_scanner->goToPreviousIm();
 
             update();
 
         }else if(c == Command::UPPER_DIR){
+
+            std::cerr << __FILE__ << __LINE__ << std::endl;
             
-            cur_instance->goToParentDir();
+            dir_scanner->goToParentDir();
             
-            std::cerr << "[INFO ] Moving to " << cur_instance->getCurrentDir() << std::endl;
+            std::cerr << "[INFO ] Moving to " << dir_scanner->getCurrentDir() << std::endl;
 
             update();
                 
         }else if(c == Command::LOWER_DIR){
 
-            cur_instance->goToChildDir();
+            dir_scanner->goToChildDir();
             
-            std::cerr << "[INFO ] Moving to " << cur_instance->getCurrentDir() << std::endl;
+            std::cerr << "[INFO ] Moving to " << dir_scanner->getCurrentDir() << std::endl;
 
             update();            
             
         }else if(c == Command::NEXT_DIR){
 
-            cur_instance->goToNextBrotherDir();
+            dir_scanner->goToNextBrotherDir();
             
-            std::cerr << "[INFO ] Moving to " << cur_instance->getCurrentDir() << std::endl;
+            std::cerr << "[INFO ] Moving to " << dir_scanner->getCurrentDir() << std::endl;
 
             update();
             
         }else if(c == Command::PREVIOUS_DIR){
 
-            cur_instance->goToPreviousBrotherDir();
+            dir_scanner->goToPreviousBrotherDir();
             
-            std::cerr << "[INFO ] Moving to " << cur_instance->getCurrentDir() << std::endl;
+            std::cerr << "[INFO ] Moving to " << dir_scanner->getCurrentDir() << std::endl;
 
             update();
         }else if(c == Command::QUIT){
@@ -98,10 +100,10 @@ void ImageViewer::enterMainLoop(){
 
 void ImageViewer::update(){
 
-    if(cur_instance){
+    if(dir_scanner){
 
-        if(*cur_instance){
-            std::string tmp_path = cur_instance->getCurrentIm();
+        if(*dir_scanner){
+            std::string tmp_path = dir_scanner->getCurrentIm();
 
             if(tmp_path != cur_path){
 
@@ -110,7 +112,7 @@ void ImageViewer::update(){
                 cur_im = cur_im_original.clone();
             }
         }else{
-            cur_path = cur_instance->getCurrentDir();
+            cur_path = dir_scanner->getCurrentDir();
             cur_im_original = cv::Mat();
             cur_im = cv::Mat();
         }

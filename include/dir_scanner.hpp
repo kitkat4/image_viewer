@@ -1,6 +1,5 @@
 #pragma once
 
-#include "image_viewer.hpp"
 #include "window_manager.hpp"
 #include "my_utils_kk4.hpp"
 
@@ -14,10 +13,7 @@
 namespace fs = std::experimental::filesystem;
 using Command = WindowManager::Command;
 
-class ImageViewer;
-
 class DirScanner{
-    // friend class ImageViewer;
 public:
     DirScanner(const std::string& path);
     ~DirScanner();

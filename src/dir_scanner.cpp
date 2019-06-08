@@ -60,6 +60,8 @@ std::string DirScanner::goToNextIm(){
                       << "[ERROR] Unexpected error occured while searching the next image, "
                       << "at line " << __LINE__ << " in " << __FILE__
                       << my_utils_kk4::default_style << std::endl;
+            std::cerr << "check_count: " << check_count<< std::endl;
+            std::cerr << "entries.size: " << entries.size() << std::endl;
             ok = false;
             im_ix = -1;
             return "";
