@@ -225,8 +225,10 @@ void WindowManager::drawImage(const cv::Mat& im){
     std::cerr << "[DEBUG] Func " << __func__ << " at line " << __LINE__ << " of file " << __FILE__ << std::endl;
 
     std::cerr << "[DEBUG] Func " << __func__ << " at line " << __LINE__ << " of file " << __FILE__ << std::endl;
+
+    XClearWindow(dis, win);
     
-    XCopyArea(dis, pix, win, gc, 0, 0, 1900, 1000, 0, 0);
+    XCopyArea(dis, pix, win, gc, 0, 0, im.cols, im.rows, 0, 0);
 
     XFlush(dis);
     
