@@ -12,6 +12,7 @@
 
 
 #include <string>
+#include <cmath>
 
 class WindowManager{
 
@@ -26,6 +27,8 @@ public:
         NEXT_DIR,
         PREVIOUS_DIR,
         REDRAW,
+        SCALE_UP,
+        SCALE_DOWN,
         QUIT
     }Command;
     
@@ -36,6 +39,8 @@ public:
     void update(const cv::Mat& im, const std::string& current_path);
     Command nextCommand()const;
     bool isShutdown()const;
+    void scaleUp();
+    void scaleDown();
     void closeWindow();
 
 protected:
@@ -43,6 +48,14 @@ protected:
     std::string window_name;
 
     void drawImage(const cv::Mat& im);
+    void generateImageToDrawFitToWindow(const cv::Mat& in_im, cv::Mat * const out_im,
+                                        int * const upper_left_x, int * const upper_left_y,
+                                        double * const scale)const;
+    void generateImageToDraw(const cv::Mat& im, cv::Mat * const out_im,
+                             int * const upper_left_x, int * const upper_left_y,
+                             double * const scale)const;
+    double calcScaleToFitToWindow(const cv::Mat& im)const;
+    void getWindowSize(int * const width, int * const height)const;
     void setDefaultBackground();
 
     Display * dis;
@@ -52,15 +65,17 @@ protected:
 
     // Must be odd number.
     const int sliding_step_num;
+    int cur_offset_x;           // in pixel
+    int cur_offset_y;           // in pixel
     
-    /*
-      Center position will be
-      (cur_center_x * (actual width) / (sliding_step_num - 1),
-      cur_center_y * (actual height) / (sliding_step_num - 1))
-    */
-    int cur_center_x;           
-    int cur_center_y;
-    int cur_scale;
+    // scale = initial_scale * pow(scale_base, cur_scale_exponent)
+    double initial_scale;
+    const double scale_base;
+    int cur_scale_exponent;
+    double last_scale;
+
+    // If true, scale is ignored.
+    bool fit_to_window;
 
     int tile_size;
 };

@@ -1,10 +1,23 @@
 #include "window_manager.hpp"
 
 WindowManager::WindowManager():
-    tile_size(64){}
+    sliding_step_num(21),
+    cur_offset_x(0),            // center
+    cur_offset_y(0),            // center
+    initial_scale(1.0),
+    scale_base(2.0), cur_scale_exponent(0),
+    last_scale(1.0), fit_to_window(true), tile_size(64)
+{
+
+}
 
 WindowManager::WindowManager(const std::string& window_name, const int width, const int height)
-    :window_name(window_name), tile_size(64){
+    :window_name(window_name), sliding_step_num(21),
+     cur_offset_x(0),           // center
+     cur_offset_y(0),           // center
+     initial_scale(1.0),
+     scale_base(2.0), cur_scale_exponent(0),
+     last_scale(1.0), fit_to_window(true), tile_size(64){
 
 
     dis = XOpenDisplay(nullptr);
@@ -83,6 +96,10 @@ WindowManager::Command WindowManager::nextCommand()const{
             return PREVIOUS_DIR;
         case XK_Page_Down:
             return NEXT_DIR;
+        case XK_plus:
+            return SCALE_UP;
+        case XK_minus:
+            return SCALE_DOWN;
         case XK_q:
             return QUIT;
         default:
@@ -104,6 +121,25 @@ bool WindowManager::isShutdown()const{
     return false;
 }
 
+void WindowManager::scaleUp(){
+
+    if(fit_to_window){
+        fit_to_window = false;
+        initial_scale = last_scale;
+    }
+    
+    cur_scale_exponent += 1;
+}
+
+void WindowManager::scaleDown(){
+
+    if(fit_to_window){
+        fit_to_window = false;
+        initial_scale = last_scale;
+    }
+    
+    cur_scale_exponent -= 1;
+}
 
 void WindowManager::closeWindow(){
 
@@ -122,23 +158,15 @@ void WindowManager::drawImage(const cv::Mat& im){
 
     const int depth = DefaultDepth(dis, screen);
 
-    XWindowAttributes window_attributes;
-    XGetWindowAttributes(dis, win, &window_attributes);
-
-    const double scale_v = (double)window_attributes.height / im.rows;
-    const double scale_h = (double)window_attributes.width / im.cols;
-    double scale = 1.0;
-
-    // calc min(1.0, scale_v, scale_h)
-    if(scale_v < scale){
-        scale = scale_v;
-    }
-    if(scale_h < scale){
-        scale = scale_h;
-    }
+    int upper_left_x, upper_left_y;
 
     cv::Mat tmp_im;
-    cv::resize(im, tmp_im, cv::Size(0, 0), scale, scale, cv::INTER_AREA);
+    
+    if(fit_to_window){
+        generateImageToDrawFitToWindow(im, &tmp_im, &upper_left_x, &upper_left_y, &last_scale);
+    }else{
+        generateImageToDraw(im, &tmp_im, &upper_left_x, &upper_left_y, &last_scale);
+    }
     
     cv::cvtColor(tmp_im, tmp_im, CV_BGR2BGRA);
     
@@ -152,8 +180,7 @@ void WindowManager::drawImage(const cv::Mat& im){
 
     XClearWindow(dis, win);
 
-    const int upper_left_x = (window_attributes.width  - tmp_im.cols) / 2;
-    const int upper_left_y = (window_attributes.height - tmp_im.rows) / 2;
+    
     
     XCopyArea(dis, pix, win, gc, 0, 0, tmp_im.cols, tmp_im.rows,
               upper_left_x, upper_left_y);
@@ -162,6 +189,72 @@ void WindowManager::drawImage(const cv::Mat& im){
     
 }
 
+void WindowManager::generateImageToDrawFitToWindow(const cv::Mat& in_im, cv::Mat * const out_im,
+                                                   int * const upper_left_x,
+                                                   int * const upper_left_y,
+                                                   double * const scale)const{
+
+    const double tmp_scale = calcScaleToFitToWindow(in_im);
+    
+    cv::resize(in_im, *out_im, cv::Size(0, 0), tmp_scale, tmp_scale, cv::INTER_AREA);
+
+    int width, height;
+
+    getWindowSize(&width, &height);
+
+    *upper_left_x = (width  - out_im->cols) / 2;
+    *upper_left_y = (height - out_im->rows) / 2;
+
+    if(scale){
+        *scale = tmp_scale;
+    }
+
+    return;
+}
+
+void WindowManager::generateImageToDraw(const cv::Mat& in_im, cv::Mat * const out_im,
+                                        int * const upper_left_x,
+                                        int * const upper_left_y,
+                                        double * const scale)const{
+
+    const double tmp_scale = initial_scale * std::pow(scale_base, cur_scale_exponent);
+
+    
+    if(scale){
+        *scale = tmp_scale;
+    }
+}
+
+double WindowManager::calcScaleToFitToWindow(const cv::Mat& im)const{
+
+    XWindowAttributes window_attributes;
+    XGetWindowAttributes(dis, win, &window_attributes);
+
+    const double scale_v = (double)window_attributes.height / im.rows;
+    const double scale_h = (double)window_attributes.width / im.cols;
+    double tmp_scale = 1.0;
+
+    // calc min(1.0, scale_v, scale_h)
+    if(scale_v < tmp_scale){
+        tmp_scale = scale_v;
+    }
+    if(scale_h < tmp_scale){
+        tmp_scale = scale_h;
+    }
+
+    return tmp_scale;
+}
+
+void WindowManager::getWindowSize(int * const width, int * const height)const{
+
+    XWindowAttributes window_attributes;
+    XGetWindowAttributes(dis, win, &window_attributes);
+
+    *height = window_attributes.height;
+    *width = window_attributes.width;
+
+    return;
+}
 
 void WindowManager::setDefaultBackground(){
 
