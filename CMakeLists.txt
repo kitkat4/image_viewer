@@ -13,7 +13,13 @@ link_directories(
 
 include_directories(include)
 find_package(OpenCV REQUIRED)
-find_package(X11)
+find_package(X11 REQUIRED)
+find_package(Qt5Core)
+find_package(Qt5Gui)
+find_package(Qt5Widgets)
+find_package(Qt5Test)
+find_package(Qt5Concurrent)
+
 
 add_executable(image_viewer
   src/main.cpp

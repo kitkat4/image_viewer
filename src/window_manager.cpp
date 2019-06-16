@@ -138,7 +138,7 @@ void WindowManager::drawImage(const cv::Mat& im){
     }
 
     cv::Mat tmp_im;
-    cv::resize(im, tmp_im, cv::Size(0, 0), scale, scale);
+    cv::resize(im, tmp_im, cv::Size(0, 0), scale, scale, cv::INTER_AREA);
     
     cv::cvtColor(tmp_im, tmp_im, CV_BGR2BGRA);
     
