@@ -50,6 +50,18 @@ protected:
     Window win;
     GC gc;
 
+    // Must be odd number.
+    const int sliding_step_num;
+    
+    /*
+      Center position will be
+      (cur_center_x * (actual width) / (sliding_step_num - 1),
+      cur_center_y * (actual height) / (sliding_step_num - 1))
+    */
+    int cur_center_x;           
+    int cur_center_y;
+    int cur_scale;
+
     int tile_size;
 };
 

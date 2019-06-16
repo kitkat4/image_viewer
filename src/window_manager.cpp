@@ -162,6 +162,7 @@ void WindowManager::drawImage(const cv::Mat& im){
     
 }
 
+
 void WindowManager::setDefaultBackground(){
 
     const int depth = DefaultDepth(dis, screen);
@@ -212,3 +213,5 @@ void WindowManager::setDefaultBackground(){
 
     XSetWindowBackgroundPixmap(dis, win, pix);    
 }
+
+
