@@ -29,6 +29,10 @@ public:
         REDRAW,
         SCALE_UP,
         SCALE_DOWN,
+        MOVE_RIGHT,
+        MOVE_LEFT,
+        MOVE_UP,
+        MOVE_DOWN,
         QUIT
     }Command;
     
@@ -41,6 +45,10 @@ public:
     bool isShutdown()const;
     void scaleUp();
     void scaleDown();
+    void moveRight();
+    void moveLeft();
+    void moveUp();
+    void moveDown();
     void closeWindow();
 
 protected:

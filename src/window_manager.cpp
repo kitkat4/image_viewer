@@ -100,6 +100,18 @@ WindowManager::Command WindowManager::nextCommand()const{
             return SCALE_UP;
         case XK_minus:
             return SCALE_DOWN;
+        case (XK_Shift_L | XK_Right):
+        case (XK_Shift_R | XK_Right):
+            return MOVE_RIGHT;
+        case (XK_Shift_L | XK_Left):
+        case (XK_Shift_R | XK_Left):
+            return MOVE_LEFT;
+        case (XK_Shift_L | XK_Up):
+        case (XK_Shift_R | XK_Up):
+            return MOVE_UP;
+        case (XK_Shift_L | XK_Down):
+        case (XK_Shift_R | XK_Down):
+            return MOVE_DOWN;
         case XK_q:
             return QUIT;
         default:
@@ -145,6 +157,42 @@ void WindowManager::scaleDown(){
 
     cur_offset_x = (int)(cur_offset_x / scale_base);
     cur_offset_y = (int)(cur_offset_y / scale_base);
+}
+
+void WindowManager::moveRight(){
+
+    int width, height;
+
+    getWindowSize(&width, &height);
+
+    cur_offset_x += (int)((width / (sliding_step_num - 1)) / last_scale)
+}
+
+void WindowManager::moveLeft(){
+
+    int width, height;
+
+    getWindowSize(&width, &height);
+
+    cur_offset_x -= (int)((width / (sliding_step_num - 1)) / last_scale)
+}
+
+void WindowManager::moveUp(){
+
+    int width, height;
+
+    getWindowSize(&width, &height);
+
+    cur_offset_y -= (int)((width / (sliding_step_num - 1)) / last_scale)
+}
+
+void WindowManager::moveDown(){
+
+    int width, height;
+
+    getWindowSize(&width, &height);
+
+    cur_offset_y += (int)((width / (sliding_step_num - 1)) / last_scale)
 }
 
 void WindowManager::closeWindow(){

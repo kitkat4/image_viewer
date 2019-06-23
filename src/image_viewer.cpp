@@ -96,9 +96,43 @@ void ImageViewer::enterMainLoop(){
             wm->scaleDown();
 
             update();
+
+        }else if(c == Command::MOVE_RIGHT){
+
+            std::cerr << "[INFO ] Moving right" << std::endl;
+
+            wm->moveRight();
+
+            update();
+
+        }else if(c == Command::MOVE_LEFT){
+
+            std::cerr << "[INFO ] Moving left" << std::endl;
+
+            wm->moveLeft();
+
+            update();
+            
+        }else if(c == Command::MOVE_UP){
+
+            std::cerr << "[INFO ] Moving up" << std::endl;
+
+            wm->moveUp();
+
+            update();
+            
+        }else if(c == Command::MOVE_DOWN){
+
+            std::cerr << "[INFO ] Moving down" << std::endl;
+
+            wm->moveDown();
+
+            update();
             
         }else if(c == Command::QUIT){
+            
             wm->closeWindow();
+            
             return;
         }
 
