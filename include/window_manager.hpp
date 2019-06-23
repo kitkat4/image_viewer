@@ -57,6 +57,8 @@ protected:
     double calcScaleToFitToWindow(const cv::Mat& im)const;
     void getWindowSize(int * const width, int * const height)const;
     void setDefaultBackground();
+    void getRegionToDraw(int * const upper_left_x, int * const upper_left_y,
+                         int * const lower_right_x, int * const lower_right_y);
 
     Display * dis;
     int screen;

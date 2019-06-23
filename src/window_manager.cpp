@@ -219,6 +219,11 @@ void WindowManager::generateImageToDraw(const cv::Mat& in_im, cv::Mat * const ou
 
     const double tmp_scale = initial_scale * std::pow(scale_base, cur_scale_exponent);
 
+    int window_width, window_height;
+
+    getWindowSize(&window_width, &window_height);
+
+    
     
     if(scale){
         *scale = tmp_scale;
