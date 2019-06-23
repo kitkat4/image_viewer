@@ -219,10 +219,17 @@ void WindowManager::generateImageToDraw(const cv::Mat& in_im, cv::Mat * const ou
 
     const double tmp_scale = initial_scale * std::pow(scale_base, cur_scale_exponent);
 
-    int window_width, window_height;
+    int u_l_x, u_l_y, l_r_x, l_r_y;
+    getRegionToDraw(in_im, tmp_scale, &u_l_x, &u_l_y, &l_r_x, &l_r_y);
 
-    getWindowSize(&window_width, &window_height);
+    u_l_x = u_l_x < 0 ? 0 : u_l_x;
+    u_l_y = u_l_y < 0 ? 0 : u_l_y;
+    l_r_x = l_r_x >= in_im.cols ? in_im.cols : l_r_x;
+    l_r_y = l_r_y >= in_im.rows ? in_im.rows : l_r_y;
 
+    cv::Rect roi(u_l_x, u_l_y, l_r_x - u_l_x, l_r_y - u_l_y);
+                 
+    // cv::resize(in_im(roi), out_im, )
     
     
     if(scale){
@@ -310,6 +317,25 @@ void WindowManager::setDefaultBackground(){
     XFillRectangles(dis, pix, gc, rectangles.data(), (int)rectangles.size());
 
     XSetWindowBackgroundPixmap(dis, win, pix);    
+}
+
+void WindowManager::getRegionToDraw(const cv::Mat& in_im, const double scale,
+                                    int * const upper_left_x, int * const upper_left_y,
+                                    int * const lower_right_x, int * const lower_right_y)const{
+
+    int window_width, window_height;
+
+    getWindowSize(&window_width, &window_height);
+
+    const int tmp_width = window_width / scale;
+    const int tmp_hegiht = window_height / scale;
+
+    upper_left_x = int(- (tmp_width / 2) / scale + in_im.cols / 2 + cur_offset_x);
+    upper_left_y = int(- (tmp_height / 2) / scale + in_im.rows / 2 + cur_offset_y);
+    lower_left_x = int(  (tmp_width / 2) / scale + in_im.cols / 2 + cur_offset_x);
+    lower_left_y = int(  (tmp_height / 2) / scale + in_im.rows / 2 + cur_offset_y);
+
+    return;
 }
 
 

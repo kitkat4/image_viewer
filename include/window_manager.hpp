@@ -57,8 +57,12 @@ protected:
     double calcScaleToFitToWindow(const cv::Mat& im)const;
     void getWindowSize(int * const width, int * const height)const;
     void setDefaultBackground();
-    void getRegionToDraw(int * const upper_left_x, int * const upper_left_y,
-                         int * const lower_right_x, int * const lower_right_y);
+
+    // To get the coordinates of upper left and lower right point of the region
+    // to draw. The values are represented in the image coordinates.
+    void getRegionToDraw(const cv::Mat& in_im, const double scale,
+                         int * const upper_left_x, int * const upper_left_y,
+                         int * const lower_right_x, int * const lower_right_y)const;
 
     Display * dis;
     int screen;
