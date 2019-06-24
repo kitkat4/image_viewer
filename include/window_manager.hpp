@@ -33,6 +33,7 @@ public:
         MOVE_LEFT,
         MOVE_UP,
         MOVE_DOWN,
+        MOVE_CENTER,
         QUIT
     }Command;
     
@@ -41,7 +42,7 @@ public:
     ~WindowManager();
 
     void update(const cv::Mat& im, const std::string& current_path);
-    Command nextCommand()const;
+    Command nextCommand();
     bool isShutdown()const;
     void scaleUp();
     void scaleDown();
@@ -49,11 +50,10 @@ public:
     void moveLeft();
     void moveUp();
     void moveDown();
+    void moveCenter();
     void closeWindow();
 
 protected:
-
-    std::string window_name;
 
     void drawImage(const cv::Mat& im);
     void generateImageToDrawFitToWindow(const cv::Mat& in_im, cv::Mat * const out_im,
@@ -72,13 +72,20 @@ protected:
                          int * const upper_left_x, int * const upper_left_y,
                          int * const lower_right_x, int * const lower_right_y)const;
 
+    bool isShiftPressed()const;
+
+
+    std::string window_name;
+
     Display * dis;
     int screen;
     Window win;
     GC gc;
 
+    bool shift_l_pressed, shift_r_pressed;
+
     // Must be odd number.
-    const int sliding_step_num;
+    const int sliding_step;     // in pixel
     int cur_offset_x;           // in pixel
     int cur_offset_y;           // in pixel
     

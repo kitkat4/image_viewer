@@ -1,7 +1,9 @@
 #include "window_manager.hpp"
 
 WindowManager::WindowManager():
-    sliding_step_num(21),
+    shift_l_pressed(false),
+    shift_r_pressed(false),
+    sliding_step(10),
     cur_offset_x(0),            // center
     cur_offset_y(0),            // center
     initial_scale(1.0),
@@ -12,7 +14,10 @@ WindowManager::WindowManager():
 }
 
 WindowManager::WindowManager(const std::string& window_name, const int width, const int height)
-    :window_name(window_name), sliding_step_num(21),
+    :window_name(window_name),
+     shift_l_pressed(false),
+     shift_r_pressed(false),
+     sliding_step(10),
      cur_offset_x(0),           // center
      cur_offset_y(0),           // center
      initial_scale(1.0),
@@ -35,7 +40,8 @@ WindowManager::WindowManager(const std::string& window_name, const int width, co
     win = XCreateSimpleWindow(dis, RootWindow(dis, screen), 0, 0, width, height,
                               5, None, None);
 
-    XSelectInput(dis, win, ExposureMask | ButtonPressMask | KeyPressMask | StructureNotifyMask);
+    XSelectInput(dis, win, ExposureMask | ButtonPressMask | KeyPressMask | KeyReleaseMask |
+                 StructureNotifyMask);
 
     gc = XCreateGC(dis, win, 0, 0);
 
@@ -72,7 +78,7 @@ void WindowManager::update(const cv::Mat& im, const std::string& current_path){
     }
 }
 
-WindowManager::Command WindowManager::nextCommand()const{
+WindowManager::Command WindowManager::nextCommand(){
 
     XEvent x_event;
     
@@ -84,44 +90,113 @@ WindowManager::Command WindowManager::nextCommand()const{
                                             x_event.xkey.state & ShiftMask ? 1 : 0);
         
         switch(key_sym){
+            
         case XK_Right:
-            return NEXT_IM;
+            
+            if(isShiftPressed()){
+                return MOVE_RIGHT;
+            }else{
+                return NEXT_IM;
+            }
+            
         case XK_Left:
-            return PREVIOUS_IM;
+            
+            if(isShiftPressed()){
+                return MOVE_LEFT;
+            }else{
+                return PREVIOUS_IM;
+            }
+            
         case XK_Up:
-            return UPPER_DIR;
+
+            if(isShiftPressed()){
+                return MOVE_UP;
+            }else{
+                return UPPER_DIR;
+            }
+            
         case XK_Down:
-            return LOWER_DIR;
+
+            if(isShiftPressed()){
+                return MOVE_DOWN;
+            }else{
+                return LOWER_DIR;
+            }
+            
         case XK_Page_Up:
+            
             return PREVIOUS_DIR;
+            
         case XK_Page_Down:
+            
             return NEXT_DIR;
+            
         case XK_plus:
+            
             return SCALE_UP;
+            
         case XK_minus:
+            
             return SCALE_DOWN;
-        case (XK_Shift_L | XK_Right):
-        case (XK_Shift_R | XK_Right):
-            return MOVE_RIGHT;
-        case (XK_Shift_L | XK_Left):
-        case (XK_Shift_R | XK_Left):
-            return MOVE_LEFT;
-        case (XK_Shift_L | XK_Up):
-        case (XK_Shift_R | XK_Up):
-            return MOVE_UP;
-        case (XK_Shift_L | XK_Down):
-        case (XK_Shift_R | XK_Down):
-            return MOVE_DOWN;
+            
+        case XK_Shift_L:
+            
+            shift_l_pressed = true;
+            break;
+            
+        case XK_Shift_R:
+            
+            shift_r_pressed = true;
+            break;
+
+        case XK_c:
+
+            return MOVE_CENTER;
+            
         case XK_q:
+            
             return QUIT;
+            
         default:
+            
+            return NOTHING;
+        }
+
+    }else if(x_event.type == KeyRelease){
+
+        KeySym key_sym = XkbKeycodeToKeysym(dis, x_event.xkey.keycode, 0,
+                                            x_event.xkey.state & ShiftMask ? 1 : 0);
+
+        switch(key_sym){
+        case XK_Shift_L:
+            
+            if(shift_l_pressed){
+                shift_l_pressed = false;
+            }
+
+            break;
+            
+        case XK_Shift_R:
+
+            if(shift_r_pressed){
+                shift_r_pressed = false;
+            }
+
+            break;
+
+        default:
+            
             return NOTHING;
         }
         
     }else if(x_event.type == ConfigureNotify){
+        
         return REDRAW;
+        
     }else{
+        
         return NOTHING;
+        
     }
     
 }
@@ -165,7 +240,7 @@ void WindowManager::moveRight(){
 
     getWindowSize(&width, &height);
 
-    cur_offset_x += (int)((width / (sliding_step_num - 1)) / last_scale)
+    cur_offset_x += sliding_step;
 }
 
 void WindowManager::moveLeft(){
@@ -173,8 +248,8 @@ void WindowManager::moveLeft(){
     int width, height;
 
     getWindowSize(&width, &height);
-
-    cur_offset_x -= (int)((width / (sliding_step_num - 1)) / last_scale)
+    
+    cur_offset_x -= sliding_step;
 }
 
 void WindowManager::moveUp(){
@@ -183,7 +258,7 @@ void WindowManager::moveUp(){
 
     getWindowSize(&width, &height);
 
-    cur_offset_y -= (int)((width / (sliding_step_num - 1)) / last_scale)
+    cur_offset_y -= sliding_step;
 }
 
 void WindowManager::moveDown(){
@@ -192,7 +267,12 @@ void WindowManager::moveDown(){
 
     getWindowSize(&width, &height);
 
-    cur_offset_y += (int)((width / (sliding_step_num - 1)) / last_scale)
+    cur_offset_y += sliding_step;
+}
+
+void WindowManager::moveCenter(){
+
+    cur_offset_x = cur_offset_y = 0;
 }
 
 void WindowManager::closeWindow(){
@@ -254,8 +334,8 @@ void WindowManager::generateImageToDrawFitToWindow(const cv::Mat& in_im, cv::Mat
 
     getWindowSize(&width, &height);
 
-    *upper_left_x = (width  - out_im->cols) / 2;
-    *upper_left_y = (height - out_im->rows) / 2;
+    *upper_left_x = (width  - out_im->cols) / 2 + cur_offset_x;
+    *upper_left_y = (height - out_im->rows) / 2 + cur_offset_y;
 
     if(scale){
         *scale = tmp_scale;
@@ -401,4 +481,7 @@ void WindowManager::getRegionToDraw(const cv::Mat& in_im, const double scale,
     return;
 }
 
+bool WindowManager::isShiftPressed()const{
 
+    return shift_l_pressed || shift_r_pressed;
+}

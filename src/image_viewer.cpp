@@ -128,6 +128,14 @@ void ImageViewer::enterMainLoop(){
             wm->moveDown();
 
             update();
+
+        }else if(c == Command::MOVE_CENTER){
+
+            std::cerr << "[INFO ] Moving center" << std::endl;
+
+            wm->moveCenter();
+
+            update();
             
         }else if(c == Command::QUIT){
             
