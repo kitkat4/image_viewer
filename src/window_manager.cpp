@@ -217,8 +217,6 @@ void WindowManager::scaleUp(){
     
     cur_scale_exponent += 1;
 
-    cur_offset_x = (int)(cur_offset_x * scale_base);
-    cur_offset_y = (int)(cur_offset_y * scale_base);
 }
 
 void WindowManager::scaleDown(){
@@ -230,8 +228,6 @@ void WindowManager::scaleDown(){
     
     cur_scale_exponent -= 1;
 
-    cur_offset_x = (int)(cur_offset_x / scale_base);
-    cur_offset_y = (int)(cur_offset_y / scale_base);
 }
 
 void WindowManager::moveRight(){
@@ -264,7 +260,7 @@ void WindowManager::clearScaleAndOffset(){
     cur_offset_x = cur_offset_y = 0;
 
     fit_to_window = true;
-    initial_scale = 1.0;
+    cur_scale_exponent = 0;
 }
 
 
@@ -356,6 +352,9 @@ void WindowManager::generateImageToDraw(const cv::Mat& in_im, cv::Mat * const ou
     if(u_l_x < 0){
         *upper_left_x = (-u_l_x) * tmp_scale;
         u_l_x = 0;
+    }else if(u_l_x >= in_im.cols){
+        *upper_left_x = 0;
+        u_l_x = in_im.cols - 1;
     }else{
         *upper_left_x = 0;
     }
@@ -363,12 +362,18 @@ void WindowManager::generateImageToDraw(const cv::Mat& in_im, cv::Mat * const ou
     if(u_l_y < 0){
         *upper_left_y = (-u_l_y) * tmp_scale;
         u_l_y = 0;
+    }else if(u_l_y >= in_im.rows){
+        *upper_left_y = 0;
+        u_l_y = in_im.rows - 1;
     }else{
         *upper_left_y = 0;
     }
 
-    l_r_x = l_r_x >= in_im.cols ? in_im.cols : l_r_x;
-    l_r_y = l_r_y >= in_im.rows ? in_im.rows : l_r_y;
+    l_r_x = (l_r_x >= in_im.cols) ? in_im.cols - 1 : l_r_x;
+    l_r_y = (l_r_y >= in_im.rows) ? in_im.rows - 1 : l_r_y;
+
+    l_r_x = (l_r_x < 0) ? 0 : l_r_x;
+    l_r_y = (l_r_y < 0) ? 0 : l_r_y;
 
     if(l_r_x - u_l_x <= 0 || l_r_y - u_l_y <= 0){
         *out_im = cv::Mat();
@@ -477,10 +482,10 @@ void WindowManager::getRegionToDraw(const cv::Mat& in_im, const double scale,
     const int tmp_width = window_width / scale;
     const int tmp_height = window_height / scale;
 
-    *upper_left_x = (int)(- (tmp_width / 2) + in_im.cols / 2 + cur_offset_x);
-    *upper_left_y = (int)(- (tmp_height / 2) + in_im.rows / 2 + cur_offset_y);
-    *lower_right_x = (int)(  (tmp_width / 2) + in_im.cols / 2 + cur_offset_x);
-    *lower_right_y = (int)(  (tmp_height / 2) + in_im.rows / 2 + cur_offset_y);
+    *upper_left_x = (int)(- (tmp_width / 2.0)  + in_im.cols / 2.0 - cur_offset_x);
+    *upper_left_y = (int)(- (tmp_height / 2.0) + in_im.rows / 2.0 - cur_offset_y);
+    *lower_right_x = (int)std::ceil((tmp_width / 2.0) + in_im.cols / 2.0 - cur_offset_x);
+    *lower_right_y = (int)std::ceil((tmp_height / 2.0) + in_im.rows / 2.0 - cur_offset_y);
 
     return;
 }
