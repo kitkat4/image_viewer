@@ -75,6 +75,7 @@ protected:
                          int * const lower_right_x, int * const lower_right_y)const;
 
     bool isShiftPressed()const;
+    bool isCtrlPressed()const;
 
 
     std::string window_name;
@@ -85,6 +86,8 @@ protected:
     GC gc;
 
     bool shift_l_pressed, shift_r_pressed;
+    bool ctrl_l_pressed, ctrl_r_pressed;
+    bool left_button_pressed;
 
     // Must be odd number.
     const int sliding_step;     // in pixel

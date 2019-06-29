@@ -3,6 +3,9 @@
 WindowManager::WindowManager():
     shift_l_pressed(false),
     shift_r_pressed(false),
+    ctrl_l_pressed(false),
+    ctrl_r_pressed(false),
+    left_button_pressed(false),
     sliding_step(10),
     cur_offset_x(0),            // center
     cur_offset_y(0),            // center
@@ -17,6 +20,9 @@ WindowManager::WindowManager(const std::string& window_name, const int width, co
     :window_name(window_name),
      shift_l_pressed(false),
      shift_r_pressed(false),
+     ctrl_l_pressed(false),
+     ctrl_r_pressed(false),
+     left_button_pressed(false),
      sliding_step(10),
      cur_offset_x(0),           // center
      cur_offset_y(0),           // center
@@ -40,7 +46,9 @@ WindowManager::WindowManager(const std::string& window_name, const int width, co
     win = XCreateSimpleWindow(dis, RootWindow(dis, screen), 0, 0, width, height,
                               5, None, None);
 
-    XSelectInput(dis, win, ExposureMask | ButtonPressMask | KeyPressMask | KeyReleaseMask |
+    XSelectInput(dis, win,
+                 ExposureMask | ButtonPressMask | ButtonReleaseMask |
+                 KeyPressMask | KeyReleaseMask |
                  StructureNotifyMask);
 
     gc = XCreateGC(dis, win, 0, 0);
@@ -106,11 +114,21 @@ WindowManager::Command WindowManager::nextCommand(){
             }else{
                 return PREVIOUS_IM;
             }
+
+        case XK_Return:
+
+            if(isShiftPressed()){
+                return PREVIOUS_IM;
+            }else{
+                return NEXT_IM;
+            }
             
         case XK_Up:
 
             if(isShiftPressed()){
                 return MOVE_UP;
+            }else if(isCtrlPressed()){
+                return SCALE_UP;
             }else{
                 return UPPER_DIR;
             }
@@ -119,6 +137,8 @@ WindowManager::Command WindowManager::nextCommand(){
 
             if(isShiftPressed()){
                 return MOVE_DOWN;
+            }else if(isCtrlPressed()){
+                return SCALE_DOWN;
             }else{
                 return LOWER_DIR;
             }
@@ -149,6 +169,16 @@ WindowManager::Command WindowManager::nextCommand(){
             shift_r_pressed = true;
             break;
 
+        case XK_Control_L:
+            
+            ctrl_l_pressed = true;
+            break;
+            
+        case XK_Control_R:
+            
+            ctrl_r_pressed = true;
+            break;
+
         case XK_c:
 
             return CLEAR;
@@ -170,22 +200,69 @@ WindowManager::Command WindowManager::nextCommand(){
         switch(key_sym){
         case XK_Shift_L:
             
-            if(shift_l_pressed){
-                shift_l_pressed = false;
-            }
-
+            shift_l_pressed = false;
             break;
             
         case XK_Shift_R:
 
-            if(shift_r_pressed){
-                shift_r_pressed = false;
-            }
+            shift_r_pressed = false;
+            break;
 
+        case XK_Control_L:
+            
+            ctrl_l_pressed = false;
+            break;
+
+        case XK_Control_R:
+
+            ctrl_r_pressed = false;
             break;
 
         default:
             
+            return NOTHING;
+        }
+
+    }else if(x_event.type == ButtonPress){
+
+        switch(x_event.xbutton.button){
+
+        case Button1:
+
+            left_button_pressed = true;
+            break;
+
+        case Button4:
+            
+            if(isCtrlPressed()){
+                return SCALE_UP;
+            }else{
+                return PREVIOUS_IM;
+            }
+
+        case Button5:
+            
+            if(isCtrlPressed()){
+                return SCALE_DOWN;
+            }else{
+                return NEXT_IM;
+            }
+
+        default:
+            return NOTHING;
+        }
+
+    }else if(x_event.type == ButtonRelease){
+
+        switch(x_event.xbutton.button){
+        case Button1:
+
+            if(left_button_pressed){
+                return NEXT_IM;
+            }
+            break;
+            
+        default:
             return NOTHING;
         }
         
@@ -493,4 +570,9 @@ void WindowManager::getRegionToDraw(const cv::Mat& in_im, const double scale,
 bool WindowManager::isShiftPressed()const{
 
     return shift_l_pressed || shift_r_pressed;
+}
+
+bool WindowManager::isCtrlPressed()const{
+
+    return ctrl_l_pressed || ctrl_r_pressed;
 }
