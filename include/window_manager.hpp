@@ -33,7 +33,8 @@ public:
         MOVE_LEFT,
         MOVE_UP,
         MOVE_DOWN,
-        MOVE_CENTER,
+        // MOVE_CENTER,
+        CLEAR,
         QUIT
     }Command;
     
@@ -51,6 +52,7 @@ public:
     void moveUp();
     void moveDown();
     void moveCenter();
+    void clearScaleAndOffset();
     void closeWindow();
 
 protected:

@@ -129,11 +129,19 @@ void ImageViewer::enterMainLoop(){
 
             update();
 
-        }else if(c == Command::MOVE_CENTER){
+        // }else if(c == Command::MOVE_CENTER){
 
-            std::cerr << "[INFO ] Moving center" << std::endl;
+        //     std::cerr << "[INFO ] Moving center" << std::endl;
 
-            wm->moveCenter();
+        //     wm->moveCenter();
+
+        //     update();
+
+        }else if(c == Command::CLEAR){
+
+            std::cerr << "[IFNO ] Clear scale factor and offset" << std::endl;
+
+            wm->clearScaleAndOffset();
 
             update();
             

@@ -151,7 +151,7 @@ WindowManager::Command WindowManager::nextCommand(){
 
         case XK_c:
 
-            return MOVE_CENTER;
+            return CLEAR;
             
         case XK_q:
             
@@ -236,36 +236,20 @@ void WindowManager::scaleDown(){
 
 void WindowManager::moveRight(){
 
-    int width, height;
-
-    getWindowSize(&width, &height);
-
     cur_offset_x += sliding_step;
 }
 
 void WindowManager::moveLeft(){
 
-    int width, height;
-
-    getWindowSize(&width, &height);
-    
     cur_offset_x -= sliding_step;
 }
 
 void WindowManager::moveUp(){
 
-    int width, height;
-
-    getWindowSize(&width, &height);
-
     cur_offset_y -= sliding_step;
 }
 
 void WindowManager::moveDown(){
-
-    int width, height;
-
-    getWindowSize(&width, &height);
 
     cur_offset_y += sliding_step;
 }
@@ -274,6 +258,15 @@ void WindowManager::moveCenter(){
 
     cur_offset_x = cur_offset_y = 0;
 }
+
+void WindowManager::clearScaleAndOffset(){
+
+    cur_offset_x = cur_offset_y = 0;
+
+    fit_to_window = true;
+    initial_scale = 1.0;
+}
+
 
 void WindowManager::closeWindow(){
 
@@ -301,6 +294,11 @@ void WindowManager::drawImage(const cv::Mat& im){
     }else{
         generateImageToDraw(im, &tmp_im, &upper_left_x, &upper_left_y, &last_scale);
     }
+
+    if(tmp_im.empty()){
+        XClearWindow(dis, win);
+        return;
+    }
     
     cv::cvtColor(tmp_im, tmp_im, CV_BGR2BGRA);
     
@@ -318,7 +316,8 @@ void WindowManager::drawImage(const cv::Mat& im){
               upper_left_x, upper_left_y);
 
     XFlush(dis);
-    
+
+    return;
 }
 
 void WindowManager::generateImageToDrawFitToWindow(const cv::Mat& in_im, cv::Mat * const out_im,
@@ -371,13 +370,18 @@ void WindowManager::generateImageToDraw(const cv::Mat& in_im, cv::Mat * const ou
     l_r_x = l_r_x >= in_im.cols ? in_im.cols : l_r_x;
     l_r_y = l_r_y >= in_im.rows ? in_im.rows : l_r_y;
 
-    cv::Rect roi(u_l_x, u_l_y, l_r_x - u_l_x, l_r_y - u_l_y);
-                 
-    cv::resize(in_im(roi), *out_im, cv::Size(0,0), tmp_scale, tmp_scale, cv::INTER_AREA);
+    if(l_r_x - u_l_x <= 0 || l_r_y - u_l_y <= 0){
+        *out_im = cv::Mat();
+    }else{
+        cv::Rect roi(u_l_x, u_l_y, l_r_x - u_l_x, l_r_y - u_l_y);
+        cv::resize(in_im(roi), *out_im, cv::Size(0,0), tmp_scale, tmp_scale, cv::INTER_AREA);
+    }
 
     if(scale){
         *scale = tmp_scale;
     }
+
+    return;
 }
 
 double WindowManager::calcScaleToFitToWindow(const cv::Mat& im)const{
