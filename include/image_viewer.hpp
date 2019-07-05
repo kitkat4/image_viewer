@@ -28,7 +28,7 @@ protected:
     std::unique_ptr<DirScanner> dir_scanner;
     std::unique_ptr<WindowManager> wm;
     cv::Mat cur_im;
-    cv::Mat cur_im_original;
+    
     std::string cur_path;
 };
 

@@ -57,6 +57,8 @@ WindowManager::WindowManager(const std::string& window_name, const int width, co
     
     XMapRaised(dis, win);
 
+    // XAutoRepeatOff(dis);
+
     while(true){
         XEvent x_event;
         XNextEvent(dis, &x_event);

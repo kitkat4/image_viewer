@@ -5,8 +5,7 @@
 ImageViewer::ImageViewer(const std::string& path, const std::string& window_name)
     :window_name(window_name){
 
-    cur_im_original = cv::imread(path);
-    cur_im = cur_im_original.clone();
+    cur_im = cv::imread(path);
     cur_path = path;
     wm.reset(new WindowManager(window_name, cur_im.cols, cur_im.rows));
     wm->update(cur_im, cur_path);
@@ -169,12 +168,10 @@ void ImageViewer::update(){
             if(tmp_path != cur_path){
 
                 cur_path = tmp_path;
-                cur_im_original = cv::imread(cur_path);
-                cur_im = cur_im_original.clone();
+                cur_im = cv::imread(cur_path);
             }
         }else{
             cur_path = dir_scanner->getCurrentDir();
-            cur_im_original = cv::Mat();
             cur_im = cv::Mat();
         }
     }
