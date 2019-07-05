@@ -11,7 +11,7 @@ ImageViewer::ImageViewer(const std::string& path, const std::string& window_name
     wm.reset(new WindowManager(window_name, cur_im.cols, cur_im.rows));
     wm->update(cur_im, cur_path);
     
-    dir_scanner = new DirScanner(path);
+    dir_scanner.reset(new DirScanner(path));
 
 }
 
