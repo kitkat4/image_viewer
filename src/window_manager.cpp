@@ -6,6 +6,7 @@ WindowManager::WindowManager():
     ctrl_l_pressed(false),
     ctrl_r_pressed(false),
     left_button_pressed(false),
+    max_queue_size(5),
     sliding_step(10),
     cur_offset_x(0),            // center
     cur_offset_y(0),            // center
@@ -23,6 +24,7 @@ WindowManager::WindowManager(const std::string& window_name, const int width, co
      ctrl_l_pressed(false),
      ctrl_r_pressed(false),
      left_button_pressed(false),
+     max_queue_size(5),
      sliding_step(10),
      cur_offset_x(0),           // center
      cur_offset_y(0),           // center
@@ -52,6 +54,10 @@ WindowManager::WindowManager(const std::string& window_name, const int width, co
                  StructureNotifyMask);
 
     gc = XCreateGC(dis, win, 0, 0);
+
+    Atom wmDelete = XInternAtom(dis, "WM_DELETE_WINDOW", true);
+    
+    XSetWMProtocols(dis, win, &wmDelete, 1);
 
     setDefaultBackground();
     
@@ -90,193 +96,14 @@ void WindowManager::update(const cv::Mat& im, const std::string& current_path){
 
 WindowManager::Command WindowManager::nextCommand(){
 
-    XEvent x_event;
-    
+    XEvent x_event, dummy;
+
     XNextEvent(dis, &x_event);
-
-    if(x_event.type == KeyPress){
-        
-        KeySym key_sym = XkbKeycodeToKeysym(dis, x_event.xkey.keycode, 0,
-                                            x_event.xkey.state & ShiftMask ? 1 : 0);
-        
-        switch(key_sym){
-            
-        case XK_Right:
-            
-            if(isShiftPressed()){
-                return MOVE_RIGHT;
-            }else{
-                return NEXT_IM;
-            }
-            
-        case XK_Left:
-            
-            if(isShiftPressed()){
-                return MOVE_LEFT;
-            }else{
-                return PREVIOUS_IM;
-            }
-
-        case XK_Return:
-
-            if(isShiftPressed()){
-                return PREVIOUS_IM;
-            }else{
-                return NEXT_IM;
-            }
-            
-        case XK_Up:
-
-            if(isShiftPressed()){
-                return MOVE_UP;
-            }else if(isCtrlPressed()){
-                return SCALE_UP;
-            }else{
-                return UPPER_DIR;
-            }
-            
-        case XK_Down:
-
-            if(isShiftPressed()){
-                return MOVE_DOWN;
-            }else if(isCtrlPressed()){
-                return SCALE_DOWN;
-            }else{
-                return LOWER_DIR;
-            }
-            
-        case XK_Page_Up:
-            
-            return PREVIOUS_DIR;
-            
-        case XK_Page_Down:
-            
-            return NEXT_DIR;
-            
-        case XK_plus:
-            
-            return SCALE_UP;
-            
-        case XK_minus:
-            
-            return SCALE_DOWN;
-            
-        case XK_Shift_L:
-            
-            shift_l_pressed = true;
-            break;
-            
-        case XK_Shift_R:
-            
-            shift_r_pressed = true;
-            break;
-
-        case XK_Control_L:
-            
-            ctrl_l_pressed = true;
-            break;
-            
-        case XK_Control_R:
-            
-            ctrl_r_pressed = true;
-            break;
-
-        case XK_c:
-
-            return CLEAR;
-            
-        case XK_q:
-            
-            return QUIT;
-            
-        default:
-            
-            return NOTHING;
-        }
-
-    }else if(x_event.type == KeyRelease){
-
-        KeySym key_sym = XkbKeycodeToKeysym(dis, x_event.xkey.keycode, 0,
-                                            x_event.xkey.state & ShiftMask ? 1 : 0);
-
-        switch(key_sym){
-        case XK_Shift_L:
-            
-            shift_l_pressed = false;
-            break;
-            
-        case XK_Shift_R:
-
-            shift_r_pressed = false;
-            break;
-
-        case XK_Control_L:
-            
-            ctrl_l_pressed = false;
-            break;
-
-        case XK_Control_R:
-
-            ctrl_r_pressed = false;
-            break;
-
-        default:
-            
-            return NOTHING;
-        }
-
-    }else if(x_event.type == ButtonPress){
-
-        switch(x_event.xbutton.button){
-
-        case Button1:
-
-            left_button_pressed = true;
-            break;
-
-        case Button4:
-            
-            if(isCtrlPressed()){
-                return SCALE_UP;
-            }else{
-                return PREVIOUS_IM;
-            }
-
-        case Button5:
-            
-            if(isCtrlPressed()){
-                return SCALE_DOWN;
-            }else{
-                return NEXT_IM;
-            }
-
-        default:
-            return NOTHING;
-        }
-
-    }else if(x_event.type == ButtonRelease){
-
-        switch(x_event.xbutton.button){
-        case Button1:
-
-            if(left_button_pressed){
-                return NEXT_IM;
-            }
-            break;
-            
-        default:
-            return NOTHING;
-        }
-        
-    }else if(x_event.type == ConfigureNotify){
-        
-        return REDRAW;
-        
-    }else{
-        
-        return NOTHING;
-        
+    while(XEventsQueued(dis, QueuedAlready) > max_queue_size){
+        XNextEvent(dis, &dummy);
     }
+
+    return processEvent(x_event);
     
 }
 
@@ -567,6 +394,199 @@ void WindowManager::getRegionToDraw(const cv::Mat& in_im, const double scale,
     *lower_right_y = (int)std::ceil((tmp_height / 2.0) + in_im.rows / 2.0 - cur_offset_y);
 
     return;
+}
+
+WindowManager::Command WindowManager::processEvent(const XEvent& event){
+
+    if(event.type == KeyPress){
+        
+        KeySym key_sym = XkbKeycodeToKeysym(dis, event.xkey.keycode, 0,
+                                            event.xkey.state & ShiftMask ? 1 : 0);
+        
+        switch(key_sym){
+            
+        case XK_Right:
+            
+            if(isShiftPressed()){
+                return MOVE_RIGHT;
+            }else{
+                return NEXT_IM;
+            }
+            
+        case XK_Left:
+            
+            if(isShiftPressed()){
+                return MOVE_LEFT;
+            }else{
+                return PREVIOUS_IM;
+            }
+
+        case XK_Return:
+
+            if(isShiftPressed()){
+                return PREVIOUS_IM;
+            }else{
+                return NEXT_IM;
+            }
+            
+        case XK_Up:
+
+            if(isShiftPressed()){
+                return MOVE_UP;
+            }else if(isCtrlPressed()){
+                return SCALE_UP;
+            }else{
+                return UPPER_DIR;
+            }
+            
+        case XK_Down:
+
+            if(isShiftPressed()){
+                return MOVE_DOWN;
+            }else if(isCtrlPressed()){
+                return SCALE_DOWN;
+            }else{
+                return LOWER_DIR;
+            }
+            
+        case XK_Page_Up:
+            
+            return PREVIOUS_DIR;
+            
+        case XK_Page_Down:
+            
+            return NEXT_DIR;
+            
+        case XK_plus:
+            
+            return SCALE_UP;
+            
+        case XK_minus:
+            
+            return SCALE_DOWN;
+            
+        case XK_Shift_L:
+            
+            shift_l_pressed = true;
+            break;
+            
+        case XK_Shift_R:
+            
+            shift_r_pressed = true;
+            break;
+
+        case XK_Control_L:
+            
+            ctrl_l_pressed = true;
+            break;
+            
+        case XK_Control_R:
+            
+            ctrl_r_pressed = true;
+            break;
+
+        case XK_c:
+
+            return CLEAR;
+            
+        case XK_q:
+            
+            return QUIT;
+            
+        default:
+            
+            return NOTHING;
+        }
+
+    }else if(event.type == KeyRelease){
+
+        KeySym key_sym = XkbKeycodeToKeysym(dis, event.xkey.keycode, 0,
+                                            event.xkey.state & ShiftMask ? 1 : 0);
+
+        switch(key_sym){
+        case XK_Shift_L:
+            
+            shift_l_pressed = false;
+            break;
+            
+        case XK_Shift_R:
+
+            shift_r_pressed = false;
+            break;
+
+        case XK_Control_L:
+            
+            ctrl_l_pressed = false;
+            break;
+
+        case XK_Control_R:
+
+            ctrl_r_pressed = false;
+            break;
+
+        default:
+            
+            return NOTHING;
+        }
+
+    }else if(event.type == ButtonPress){
+
+        switch(event.xbutton.button){
+
+        case Button1:
+
+            left_button_pressed = true;
+            break;
+
+        case Button4:
+            
+            if(isCtrlPressed()){
+                return SCALE_UP;
+            }else{
+                return PREVIOUS_IM;
+            }
+
+        case Button5:
+            
+            if(isCtrlPressed()){
+                return SCALE_DOWN;
+            }else{
+                return NEXT_IM;
+            }
+
+        default:
+            return NOTHING;
+        }
+
+    }else if(event.type == ButtonRelease){
+
+        switch(event.xbutton.button){
+        case Button1:
+
+            if(left_button_pressed){
+                return NEXT_IM;
+            }
+            break;
+            
+        default:
+            return NOTHING;
+        }
+        
+    }else if(event.type == ConfigureNotify){
+        
+        return REDRAW;
+        
+    }else if(event.type == ClientMessage){
+
+        std::cerr << "[INFO ] Window closure detected. Quiting the program." << std::endl;
+
+        return QUIT;
+        
+    }else{
+        
+        return NOTHING;
+        
+    }
 }
 
 bool WindowManager::isShiftPressed()const{

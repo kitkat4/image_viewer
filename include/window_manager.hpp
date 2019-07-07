@@ -73,6 +73,7 @@ protected:
     void getRegionToDraw(const cv::Mat& in_im, const double scale,
                          int * const upper_left_x, int * const upper_left_y,
                          int * const lower_right_x, int * const lower_right_y)const;
+    Command processEvent(const XEvent& event);
 
     bool isShiftPressed()const;
     bool isCtrlPressed()const;
@@ -88,6 +89,8 @@ protected:
     bool shift_l_pressed, shift_r_pressed;
     bool ctrl_l_pressed, ctrl_r_pressed;
     bool left_button_pressed;
+
+    const size_t max_queue_size;
 
     // Must be odd number.
     const int sliding_step;     // in pixel
