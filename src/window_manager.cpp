@@ -6,10 +6,11 @@ WindowManager::WindowManager():
     ctrl_l_pressed(false),
     ctrl_r_pressed(false),
     left_button_pressed(false),
+    left_button_drag(false),
     max_queue_size(5),
     sliding_step(10),
-    cur_offset_x(0),            // center
-    cur_offset_y(0),            // center
+    cur_offset_x(0.0),            // center
+    cur_offset_y(0.0),            // center
     initial_scale(1.0),
     scale_base(2.0), cur_scale_exponent(0),
     last_scale(1.0), fit_to_window(true), tile_size(64)
@@ -24,10 +25,11 @@ WindowManager::WindowManager(const std::string& window_name, const int width, co
      ctrl_l_pressed(false),
      ctrl_r_pressed(false),
      left_button_pressed(false),
+     left_button_drag(false),
      max_queue_size(5),
      sliding_step(10),
-     cur_offset_x(0),           // center
-     cur_offset_y(0),           // center
+     cur_offset_x(0.0),           // center
+     cur_offset_y(0.0),           // center
      initial_scale(1.0),
      scale_base(2.0), cur_scale_exponent(0),
      last_scale(1.0), fit_to_window(true), tile_size(64){
@@ -50,7 +52,7 @@ WindowManager::WindowManager(const std::string& window_name, const int width, co
 
     XSelectInput(dis, win,
                  ExposureMask | ButtonPressMask | ButtonReleaseMask |
-                 KeyPressMask | KeyReleaseMask |
+                 Button1MotionMask | KeyPressMask | KeyReleaseMask |
                  StructureNotifyMask);
 
     gc = XCreateGC(dis, win, 0, 0);
@@ -117,8 +119,7 @@ bool WindowManager::isShutdown()const{
 void WindowManager::scaleUp(){
 
     if(fit_to_window){
-        fit_to_window = false;
-        initial_scale = last_scale;
+        disableFitToWindow();
     }
     
     cur_scale_exponent += 1;
@@ -128,8 +129,7 @@ void WindowManager::scaleUp(){
 void WindowManager::scaleDown(){
 
     if(fit_to_window){
-        fit_to_window = false;
-        initial_scale = last_scale;
+        disableFitToWindow();
     }
     
     cur_scale_exponent -= 1;
@@ -158,12 +158,12 @@ void WindowManager::moveDown(){
 
 void WindowManager::moveCenter(){
 
-    cur_offset_x = cur_offset_y = 0;
+    cur_offset_x = cur_offset_y = 0.0;
 }
 
 void WindowManager::clearScaleAndOffset(){
 
-    cur_offset_x = cur_offset_y = 0;
+    cur_offset_x = cur_offset_y = 0.0;
 
     fit_to_window = true;
     cur_scale_exponent = 0;
@@ -235,8 +235,8 @@ void WindowManager::generateImageToDrawFitToWindow(const cv::Mat& in_im, cv::Mat
 
     getWindowSize(&width, &height);
 
-    *upper_left_x = (width  - out_im->cols) / 2 + cur_offset_x;
-    *upper_left_y = (height - out_im->rows) / 2 + cur_offset_y;
+    *upper_left_x = (int)((width  - out_im->cols) / 2 + cur_offset_x);
+    *upper_left_y = (int)((height - out_im->rows) / 2 + cur_offset_y);
 
     if(scale){
         *scale = tmp_scale;
@@ -468,22 +468,22 @@ WindowManager::Command WindowManager::processEvent(const XEvent& event){
         case XK_Shift_L:
             
             shift_l_pressed = true;
-            break;
+            return NOTHING;
             
         case XK_Shift_R:
             
             shift_r_pressed = true;
-            break;
+            return NOTHING;
 
         case XK_Control_L:
             
             ctrl_l_pressed = true;
-            break;
+            return NOTHING;
             
         case XK_Control_R:
             
             ctrl_r_pressed = true;
-            break;
+            return NOTHING;
 
         case XK_c:
 
@@ -507,22 +507,22 @@ WindowManager::Command WindowManager::processEvent(const XEvent& event){
         case XK_Shift_L:
             
             shift_l_pressed = false;
-            break;
+            return NOTHING;
             
         case XK_Shift_R:
 
             shift_r_pressed = false;
-            break;
+            return NOTHING;
 
         case XK_Control_L:
             
             ctrl_l_pressed = false;
-            break;
+            return NOTHING;
 
         case XK_Control_R:
 
             ctrl_r_pressed = false;
-            break;
+            return NOTHING;
 
         default:
             
@@ -533,12 +533,12 @@ WindowManager::Command WindowManager::processEvent(const XEvent& event){
 
         switch(event.xbutton.button){
 
-        case Button1:
+        case Button1:           // left click
 
             left_button_pressed = true;
-            break;
+            return NOTHING;
 
-        case Button4:
+        case Button4:           // wheel up
             
             if(isCtrlPressed()){
                 return SCALE_UP;
@@ -546,7 +546,7 @@ WindowManager::Command WindowManager::processEvent(const XEvent& event){
                 return PREVIOUS_IM;
             }
 
-        case Button5:
+        case Button5:           // wheel down
             
             if(isCtrlPressed()){
                 return SCALE_DOWN;
@@ -563,14 +563,44 @@ WindowManager::Command WindowManager::processEvent(const XEvent& event){
         switch(event.xbutton.button){
         case Button1:
 
-            if(left_button_pressed){
+            if(left_button_drag){
+                left_button_drag = false;
+            }else if(left_button_pressed){
+                left_button_pressed = false;
                 return NEXT_IM;
             }
-            break;
+            
+            return NOTHING;
             
         default:
             return NOTHING;
         }
+
+    }else if(event.type == MotionNotify){ // mouse motion
+
+        if(left_button_drag){
+            
+            XButtonEvent* tmp_event = (XButtonEvent*)&event;
+            cur_offset_x += (tmp_event->x - last_x_while_dragging) / last_scale;
+            cur_offset_y += (tmp_event->y - last_y_while_dragging) / last_scale;
+            last_x_while_dragging = tmp_event->x;
+            last_y_while_dragging = tmp_event->y;
+
+            return REDRAW;
+            
+        }else if(left_button_pressed = true){
+            
+            if(fit_to_window){
+                disableFitToWindow();
+            }
+            
+            left_button_drag = true;
+            XButtonEvent* tmp_event = (XButtonEvent*)&event;
+            last_x_while_dragging = tmp_event->x;
+            last_y_while_dragging = tmp_event->y;
+        }
+
+        return NOTHING;
         
     }else if(event.type == ConfigureNotify){
         
@@ -587,6 +617,8 @@ WindowManager::Command WindowManager::processEvent(const XEvent& event){
         return NOTHING;
         
     }
+
+    return NOTHING;
 }
 
 bool WindowManager::isShiftPressed()const{
@@ -597,4 +629,10 @@ bool WindowManager::isShiftPressed()const{
 bool WindowManager::isCtrlPressed()const{
 
     return ctrl_l_pressed || ctrl_r_pressed;
+}
+
+void WindowManager::disableFitToWindow(){
+    
+    fit_to_window = false;
+    initial_scale = last_scale;
 }

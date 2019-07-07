@@ -77,6 +77,7 @@ protected:
 
     bool isShiftPressed()const;
     bool isCtrlPressed()const;
+    void disableFitToWindow();
 
 
     std::string window_name;
@@ -89,13 +90,16 @@ protected:
     bool shift_l_pressed, shift_r_pressed;
     bool ctrl_l_pressed, ctrl_r_pressed;
     bool left_button_pressed;
+    bool left_button_drag;
+    int last_x_while_dragging;
+    int last_y_while_dragging;
 
     const size_t max_queue_size;
 
     // Must be odd number.
     const int sliding_step;     // in pixel
-    int cur_offset_x;           // in pixel
-    int cur_offset_y;           // in pixel
+    double cur_offset_x;           // in pixel
+    double cur_offset_y;           // in pixel
     
     // scale = initial_scale * pow(scale_base, cur_scale_exponent)
     double initial_scale;
