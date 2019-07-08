@@ -15,7 +15,7 @@ class DirScanner;
 
 class ImageViewer{
 public:
-    ImageViewer(const std::string& path, const std::string& window_name = "Image Viewer");
+    ImageViewer(const std::string& path);
     ~ImageViewer();
     void enterMainLoop();
 
@@ -23,8 +23,6 @@ protected:
 
     void update();
     
-    const std::string window_name;
-    bool window_opened;
     std::unique_ptr<DirScanner> dir_scanner;
     std::unique_ptr<WindowManager> wm;
     cv::Mat cur_im;

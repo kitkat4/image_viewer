@@ -1,17 +1,14 @@
 #include "image_viewer.hpp"
 
 
-
-ImageViewer::ImageViewer(const std::string& path, const std::string& window_name)
-    :window_name(window_name){
+ImageViewer::ImageViewer(const std::string& path){
 
     cur_im = cv::imread(path);
     cur_path = path;
-    wm.reset(new WindowManager(window_name, cur_im.cols, cur_im.rows));
+    wm.reset(new WindowManager(cur_im.cols, cur_im.rows));
     wm->update(cur_im, cur_path);
     
     dir_scanner.reset(new DirScanner(path));
-
 }
 
 ImageViewer::~ImageViewer(){
@@ -39,122 +36,85 @@ void ImageViewer::enterMainLoop(){
         }else if(c == Command::NEXT_IM){
 
             dir_scanner->goToNextIm();
-
             update();
             
         }else if(c == Command::PREVIOUS_IM){
 
             dir_scanner->goToPreviousIm();
-
             update();
 
         }else if(c == Command::UPPER_DIR){
 
             dir_scanner->goToParentDir();
-            
             std::cerr << "[INFO ] Moving to " << dir_scanner->getCurrentDir() << std::endl;
-
             update();
                 
         }else if(c == Command::LOWER_DIR){
 
             dir_scanner->goToChildDir();
-            
             std::cerr << "[INFO ] Moving to " << dir_scanner->getCurrentDir() << std::endl;
-
             update();            
             
         }else if(c == Command::NEXT_DIR){
 
             dir_scanner->goToNextBrotherDir();
-            
             std::cerr << "[INFO ] Moving to " << dir_scanner->getCurrentDir() << std::endl;
-
             update();
             
         }else if(c == Command::PREVIOUS_DIR){
 
             dir_scanner->goToPreviousBrotherDir();
-            
             std::cerr << "[INFO ] Moving to " << dir_scanner->getCurrentDir() << std::endl;
-
             update();
 
         }else if(c == Command::SCALE_UP){
 
             std::cerr << "[INFO ] Scaling up" << std::endl;
-            
             wm->scaleUp();
-
             update();
             
         }else if(c == Command::SCALE_DOWN){
 
             std::cerr << "[INFO ] Scaling down" << std::endl;
-            
             wm->scaleDown();
-
             update();
 
         }else if(c == Command::MOVE_RIGHT){
 
             std::cerr << "[INFO ] Moving right" << std::endl;
-
             wm->moveRight();
-
             update();
 
         }else if(c == Command::MOVE_LEFT){
 
             std::cerr << "[INFO ] Moving left" << std::endl;
-
             wm->moveLeft();
-
             update();
             
         }else if(c == Command::MOVE_UP){
 
             std::cerr << "[INFO ] Moving up" << std::endl;
-
             wm->moveUp();
-
             update();
             
         }else if(c == Command::MOVE_DOWN){
 
             std::cerr << "[INFO ] Moving down" << std::endl;
-
             wm->moveDown();
-
             update();
-
-        // }else if(c == Command::MOVE_CENTER){
-
-        //     std::cerr << "[INFO ] Moving center" << std::endl;
-
-        //     wm->moveCenter();
-
-        //     update();
 
         }else if(c == Command::CLEAR){
 
             std::cerr << "[IFNO ] Clear scale factor and offset" << std::endl;
-
             wm->clearScaleAndOffset();
-
             update();
             
         }else if(c == Command::QUIT){
             
             wm->closeWindow();
-            
             return;
         }
-
-        if(wm->isShutdown()){
-            wm->closeWindow();
-            return;
-        }
+        
     } // end of while
 }
 

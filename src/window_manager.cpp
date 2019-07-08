@@ -18,9 +18,8 @@ WindowManager::WindowManager():
 
 }
 
-WindowManager::WindowManager(const std::string& window_name, const int width, const int height)
-    :window_name(window_name),
-     shift_l_pressed(false),
+WindowManager::WindowManager(const int width, const int height)
+    :shift_l_pressed(false),
      shift_r_pressed(false),
      ctrl_l_pressed(false),
      ctrl_r_pressed(false),
@@ -107,13 +106,6 @@ WindowManager::Command WindowManager::nextCommand(){
 
     return processEvent(x_event);
     
-}
-
-bool WindowManager::isShutdown()const{
-
-    // TODO! 
-    // check whether the window is closed
-    return false;
 }
 
 void WindowManager::scaleUp(){

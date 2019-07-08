@@ -39,12 +39,11 @@ public:
     }Command;
     
     WindowManager();
-    WindowManager(const std::string& window_name, const int width, const int height);
+    WindowManager(const int width, const int height);
     ~WindowManager();
 
     void update(const cv::Mat& im, const std::string& current_path);
     Command nextCommand();
-    bool isShutdown()const;
     void scaleUp();
     void scaleDown();
     void moveRight();
@@ -79,9 +78,6 @@ protected:
     bool isCtrlPressed()const;
     void disableFitToWindow();
 
-
-    std::string window_name;
-
     Display * dis;
     int screen;
     Window win;
@@ -110,7 +106,7 @@ protected:
     // If true, scale is ignored.
     bool fit_to_window;
 
-    int tile_size;
+    const int tile_size;
 };
 
 
