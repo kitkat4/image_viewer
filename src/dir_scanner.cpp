@@ -6,12 +6,12 @@ DirScanner::DirScanner(const std::string& path)
     :ok(false), cur_dir(fs::path()), im_ix(-1){
 
     if(! fs::is_regular_file(fs::path(path))){ // directory given
-        cur_dir.assign(path);
+        cur_dir = path;
         scanEntries();
         findFirstIm();
     }else{                      // image given
         if(isImageFile(path)){
-            cur_dir.assign(fs::path(path).parent_path());
+            cur_dir = fs::path(path).parent_path();
             scanEntries();
             
             // check the im_ix of the given image
@@ -148,7 +148,7 @@ void DirScanner::goToChildDir(){
         for(auto& itr : entries){
             if(! fs::is_regular_file(fs::path(itr))){
                 
-                cur_dir.assign(itr);
+                cur_dir = itr;
                 scanEntries();
                 findFirstIm();
                 break;
@@ -161,7 +161,7 @@ void DirScanner::goToNextBrotherDir(){
 
     child_dir_history.clear();
 
-    cur_dir.assign(nextBrotherDir());
+    cur_dir = nextBrotherDir();
 
     scanEntries();
     findFirstIm();
@@ -171,7 +171,7 @@ void DirScanner::goToPreviousBrotherDir(){
 
     child_dir_history.clear();
 
-    cur_dir.assign(previousBrotherDir());
+    cur_dir = previousBrotherDir();
 
     scanEntries();
     findFirstIm();
@@ -288,7 +288,7 @@ bool DirScanner::isImageFile(const std::string& path_str){
         return false;
     }
 
-    std::string ext = fspath.extension();
+    std::string ext = fspath.extension().generic_string();
 
     return ext == ".bmp"
         || ext == ".dib"

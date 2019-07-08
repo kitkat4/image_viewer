@@ -1,10 +1,18 @@
-cmake_minimum_required(VERSION 3.1)
+cmake_minimum_required(VERSION 3.1 FATAL_ERROR)
 
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_EXTENSIONS OFF)
-
-add_definitions(-DIMAGE_VIEWER_WITH_X11_WINDOW)
+# Decide whether to use boost or std filesystem.
+find_package(Boost COMPONENTS filesystem)
+if(Boost_FOUND)
+  message(STATUS "Build with Boost filesystem.")
+  add_definitions(-DBUILD_WITH_BOOST_FILESYSTEM)
+  set(FILESYSTEM_LIBS ${Boost_LIBRARIES})
+else()
+  message(STATUS "Build with std filesystem (C++17).")
+  set(CMAKE_CXX_STANDARD 17)
+  set(CMAKE_CXX_STANDARD_REQUIRED ON)
+  set(CMAKE_CXX_EXTENSIONS OFF)
+  set(FILESYSTEM_LIBS stdc++fs)
+endif()
 
 link_directories(
   /usr/local/lib
@@ -30,5 +38,5 @@ add_executable(image_viewer
 target_link_libraries(image_viewer
   ${OpenCV_LIBS}
   ${X11_LIBRARIES}
-  stdc++fs
+  ${FILESYSTEM_LIBS}
   )
