@@ -12,7 +12,7 @@ WindowManager::WindowManager():
     cur_offset_x(0.0),            // center
     cur_offset_y(0.0),            // center
     initial_scale(1.0),
-    scale_base(2.0), cur_scale_exponent(0),
+    scale_base(std::sqrt(2.0)), cur_scale_exponent(0),
     last_scale(1.0), fit_to_window(true), tile_size(64)
 {
 
@@ -31,7 +31,7 @@ WindowManager::WindowManager(const std::string& window_name, const int width, co
      cur_offset_x(0.0),           // center
      cur_offset_y(0.0),           // center
      initial_scale(1.0),
-     scale_base(2.0), cur_scale_exponent(0),
+     scale_base(std::sqrt(2.0)), cur_scale_exponent(0),
      last_scale(1.0), fit_to_window(true), tile_size(64){
 
 
