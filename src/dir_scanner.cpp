@@ -219,6 +219,46 @@ bool DirScanner::goToParentDir(){
     return true;
 }
 
+bool DirScanner::goToFirstImDirUnderNextParentDir(){
+
+    fs::path parent = cur_dir.parent_path();
+
+    fs::path tmp_cur_dir = cur_dir;
+
+    while(true){
+        bool success = goToNextImDir();
+        if(! success){
+            cur_dir = tmp_cur_dir;
+            updateEntries();
+            findFirstIm();
+            return false;
+        }
+        if(parent.generic_string() != cur_dir.parent_path().generic_string()){
+            return true;
+        }
+    }
+}
+
+bool DirScanner::goToLastImDirUnderPreviousParentDir(){
+
+    fs::path parent = cur_dir.parent_path();
+
+    fs::path tmp_cur_dir = cur_dir;
+
+    while(true){
+        bool success = goToPreviousImDir();
+        if(! success){
+            cur_dir = tmp_cur_dir;
+            updateEntries();
+            findFirstIm();
+            return false;
+        }
+        if(parent.generic_string() != cur_dir.parent_path().generic_string()){
+            return true;
+        }
+    }
+}
+
 bool DirScanner::goToFirstChildDir(){
 
     for(size_t i = 0; i < entries.size(); i++){

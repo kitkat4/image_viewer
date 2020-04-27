@@ -67,6 +67,18 @@ void ImageViewer::enterMainLoop(){
             std::cerr << "[ INFO] Moving to " << dir_scanner->getCurrentDir() << std::endl;
             update();
 
+        }else if(c == Command::NEXT_PARENT){
+
+            dir_scanner->goToFirstImDirUnderNextParentDir();
+            std::cerr << "[ INFO] Moving to " << dir_scanner->getCurrentDir() << std::endl;
+            update();
+            
+        }else if(c == Command::PREVIOUS_PARENT){
+
+            dir_scanner->goToLastImDirUnderPreviousParentDir();
+            std::cerr << "[ INFO] Moving to " << dir_scanner->getCurrentDir() << std::endl;
+            update();
+
         }else if(c == Command::SCALE_UP){
 
             std::cerr << "[ INFO] Scaling up" << std::endl;

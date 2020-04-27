@@ -26,6 +26,8 @@ public:
         LOWER_DIR,
         NEXT_DIR,
         PREVIOUS_DIR,
+        NEXT_PARENT,
+        PREVIOUS_PARENT,
         REDRAW,
         SCALE_UP,
         SCALE_DOWN,

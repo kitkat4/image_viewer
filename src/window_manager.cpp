@@ -443,11 +443,11 @@ WindowManager::Command WindowManager::processEvent(const XEvent& event){
             
         case XK_Page_Up:
             
-            return UPPER_DIR;
+            return PREVIOUS_PARENT;
             
         case XK_Page_Down:
             
-            return LOWER_DIR;
+            return NEXT_PARENT;
             
         case XK_plus:
             
