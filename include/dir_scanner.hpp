@@ -46,7 +46,8 @@ public:
     
 protected:
 
-    void scanEntries();
+    void updateEntries();
+    void scanDir(const fs::path& path, std::vector<std::string>& result)const;
     void findFirstIm();
 
     bool nextBrotherDir(fs::path& brother_dir, const bool loop_enabled)const;

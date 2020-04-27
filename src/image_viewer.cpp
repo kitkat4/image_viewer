@@ -57,13 +57,13 @@ void ImageViewer::enterMainLoop(){
             
         }else if(c == Command::NEXT_DIR){
 
-            dir_scanner->goToNextBrotherDir();
+            dir_scanner->goToNextImDir();
             std::cerr << "[INFO ] Moving to " << dir_scanner->getCurrentDir() << std::endl;
             update();
             
         }else if(c == Command::PREVIOUS_DIR){
 
-            dir_scanner->goToPreviousBrotherDir();
+            dir_scanner->goToPreviousImDir();
             std::cerr << "[INFO ] Moving to " << dir_scanner->getCurrentDir() << std::endl;
             update();
 

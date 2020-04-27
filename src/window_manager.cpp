@@ -428,7 +428,7 @@ WindowManager::Command WindowManager::processEvent(const XEvent& event){
             }else if(isCtrlPressed()){
                 return SCALE_UP;
             }else{
-                return UPPER_DIR;
+                return PREVIOUS_DIR;
             }
             
         case XK_Down:
@@ -438,16 +438,16 @@ WindowManager::Command WindowManager::processEvent(const XEvent& event){
             }else if(isCtrlPressed()){
                 return SCALE_DOWN;
             }else{
-                return LOWER_DIR;
+                return NEXT_DIR;
             }
             
         case XK_Page_Up:
             
-            return PREVIOUS_DIR;
+            return UPPER_DIR;
             
         case XK_Page_Down:
             
-            return NEXT_DIR;
+            return LOWER_DIR;
             
         case XK_plus:
             

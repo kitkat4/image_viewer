@@ -3,16 +3,16 @@
 
 
 DirScanner::DirScanner(const std::string& path)
-    :ok(false), cur_dir(fs::path()), im_ix(-1){
+    :ok(false), cur_dir(fs::path()), loop_dir(false), im_ix(-1){
 
     if(! fs::is_regular_file(fs::path(path))){ // directory given
         cur_dir = path;
-        scanEntries();
+        updateEntries();
         findFirstIm();
     }else{                      // image given
         if(isImageFile(path)){
             cur_dir = fs::path(path).parent_path();
-            scanEntries();
+            updateEntries();
             
             // check the im_ix of the given image
             for(int i = 0; i < (int)entries.size(); i++){
@@ -60,7 +60,7 @@ std::string DirScanner::goToNextIm(){
                       << "[ERROR] Unexpected error occured while searching the next image, "
                       << "at line " << __LINE__ << " in " << __FILE__
                       << my_utils_kk4::default_style << std::endl;
-            std::cerr << "check_count: " << check_count<< std::endl;
+            std::cerr << "check_count: " << check_count << std::endl;
             std::cerr << "entries.size: " << entries.size() << std::endl;
             ok = false;
             im_ix = -1;
@@ -141,7 +141,7 @@ bool DirScanner::goToNextDir(){
     while(! success){
         if(! goToParentDir()){
             cur_dir = tmp_cur_dir;
-            scanEntries();
+            updateEntries();
             findFirstIm();
             return false;
         }
@@ -207,7 +207,7 @@ bool DirScanner::goToParentDir(){
     child_dir_history.push_back(cur_dir);
     cur_dir = p;
 
-    scanEntries();
+    updateEntries();
     findFirstIm();
 
     return true;
@@ -215,11 +215,11 @@ bool DirScanner::goToParentDir(){
 
 bool DirScanner::goToFirstChildDir(){
 
-    for(auto& itr : entries){
-        if(! fs::is_regular_file(fs::path(itr))){
+    for(size_t i = 0; i < entries.size(); i++){
+        if(! fs::is_regular_file(fs::path(entries[i]))){
                 
-            cur_dir = itr;
-            scanEntries();
+            cur_dir = fs::path(entries[i]);
+            updateEntries();
             findFirstIm();
             return true;
         }
@@ -235,13 +235,13 @@ bool DirScanner::goToLastChildDir(){
     for(auto& itr : entries){
         if(! fs::is_regular_file(fs::path(itr))){
 
-            path = itr;
+            path = fs::path(itr);
         }
     }
 
     if(! path.empty()){
         cur_dir = path;
-        scanEntries();
+        updateEntries();
         findFirstIm();
         return true;
     }else{
@@ -255,7 +255,7 @@ bool DirScanner::goToChildDirUsingHistory(){
 
         cur_dir = child_dir_history.back();
         child_dir_history.pop_back();
-        scanEntries();
+        updateEntries();
         findFirstIm();
         return true;
         
@@ -268,10 +268,15 @@ bool DirScanner::goToNextBrotherDir(){
 
     child_dir_history.clear();
 
-    const bool ret = nextBrotherDir(cur_dir, loop_dir);
+    fs::path tmp;
 
-    scanEntries();
-    findFirstIm();
+    const bool ret = nextBrotherDir(tmp, loop_dir);
+
+    if(ret){
+        cur_dir = tmp;
+        updateEntries();
+        findFirstIm();
+    }
 
     return ret;
 }
@@ -280,10 +285,14 @@ bool DirScanner::goToPreviousBrotherDir(){
 
     child_dir_history.clear();
 
-    const bool ret = previousBrotherDir(cur_dir, loop_dir);
+    fs::path tmp;
+    const bool ret = previousBrotherDir(tmp, loop_dir);
 
-    scanEntries();
-    findFirstIm();
+    if(ret){
+        cur_dir = tmp;
+        updateEntries();
+        findFirstIm();
+    }
 
     return ret;
 }
@@ -294,14 +303,22 @@ std::string DirScanner::getCurrentDir()const{
     return cur_dir.generic_string();
 }
 
-void DirScanner::scanEntries(){
+void DirScanner::updateEntries(){
 
-    entries.clear();
-    for(auto& itr : fs::directory_iterator(cur_dir)){
-        entries.push_back(itr.path().c_str());
+    scanDir(cur_dir, entries);
+}
+
+void DirScanner::scanDir(const fs::path& path, std::vector<std::string>& result)const{
+
+    std::vector<std::string> buf;
+
+    for(auto& itr : fs::directory_iterator(path)){
+        buf.push_back(itr.path().generic_string());
     }
 
-    std::sort(entries.begin(), entries.end(), &compare_string);
+    std::sort(buf.begin(), buf.end(), &compare_string);
+
+    result = buf;
 }
 
 void DirScanner::findFirstIm(){
@@ -328,19 +345,22 @@ bool DirScanner::nextBrotherDir(fs::path& brother_dir, const bool loop_enabled)c
         return false;
     }
 
+    std::vector<std::string> contents_of_parent;
+    scanDir(p, contents_of_parent);
+
     bool finish = false;
     fs::path first_found_path;
-    for(auto& itr: fs::directory_iterator(p)){
-        if(first_found_path.empty() && ! fs::is_regular_file(itr.path())){
-            first_found_path = itr.path();
+    for(size_t i = 0; i < contents_of_parent.size(); i++){
+        if(first_found_path.empty() && ! fs::is_regular_file(fs::path(contents_of_parent[i]))){
+            first_found_path = fs::path(contents_of_parent[i]);
         }
         if(finish){
-            if(! fs::is_regular_file(itr.path())){
-                brother_dir = itr.path();
+            if(! fs::is_regular_file(fs::path(contents_of_parent[i]))){
+                brother_dir = fs::path(contents_of_parent[i]);
                 return true;
             }
         }else{
-            if(itr.path().generic_string() == cur_dir.generic_string()){
+            if(contents_of_parent[i] == cur_dir.generic_string()){
                 finish = true;
             }
         }
@@ -369,30 +389,33 @@ bool DirScanner::previousBrotherDir(fs::path& brother_dir, const bool loop_enabl
         return false;
     }
 
+    std::vector<std::string> contents_of_parent;
+    scanDir(p, contents_of_parent);
+
     fs::path prev_path;
 
     // find last dir
     if(loop_enabled){
-        for(auto& itr: fs::directory_iterator(p)){
-            if(! fs::is_regular_file(itr.path())){
-                prev_path = itr.path();
+        for(size_t i = 0; i < contents_of_parent.size(); i++){
+            if(! fs::is_regular_file(fs::path(contents_of_parent[i]))){
+                prev_path = fs::path(contents_of_parent[i]);
             }
         }
     }
     
-    for(auto& itr: fs::directory_iterator(p)){
+    for(size_t i = 0; i < contents_of_parent.size(); i++){
         
-        if(itr.path() == cur_dir){
+        if(contents_of_parent[i] == cur_dir.generic_string()){
             
             if(prev_path.empty()){
                 return false;
             }else{
-                brother_dir = prev_path.generic_string();
+                brother_dir = prev_path;
                 return true;
             }
 
-        }else if(! fs::is_regular_file(itr.path())){
-            prev_path = itr.path();
+        }else if(! fs::is_regular_file(fs::path(contents_of_parent[i]))){
+            prev_path = fs::path(contents_of_parent[i]);
         }
     }
 
@@ -447,10 +470,18 @@ bool DirScanner::isImageFile(const std::string& path_str){
 
 bool DirScanner::compare_string(const std::string& lh, const std::string& rh){
 
+    size_t min_size = lh.size() > rh.size() ? rh.size() : lh.size();
+
+    for(size_t i = 0; i < min_size; i++){
+        if(lh[i] != rh[i]){
+            return lh[i] < rh[i];
+        }
+    }
+
     if(lh.length() != rh.length()){
         return lh.length() < rh.length();
     }else{
-        return lh < rh;
+        return false;
     }
 }
 
