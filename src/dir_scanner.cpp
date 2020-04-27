@@ -6,9 +6,15 @@ DirScanner::DirScanner(const std::string& path)
     :ok(false), cur_dir(fs::path()), loop_dir(false), im_ix(-1){
 
     if(! fs::is_regular_file(fs::path(path))){ // directory given
-        cur_dir = path;
+
+        cur_dir = fs::path(path);
         updateEntries();
         findFirstIm();
+
+        if(! ok){
+            goToNextImDir();
+        }
+        
     }else{                      // image given
         if(isImageFile(path)){
             cur_dir = fs::path(path).parent_path();
@@ -332,7 +338,6 @@ void DirScanner::findFirstIm(){
         }
     }
 
-    std::cerr << "[ INFO] No valid image found" << std::endl;
     ok = false;
     im_ix = -1;
 }

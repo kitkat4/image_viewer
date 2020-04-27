@@ -3,12 +3,12 @@
 
 ImageViewer::ImageViewer(const std::string& path){
 
-    cur_im = cv::imread(path);
-    cur_path = path;
-    wm.reset(new WindowManager(cur_im.cols, cur_im.rows));
-    wm->update(cur_im, cur_path);
-    
     dir_scanner.reset(new DirScanner(path));
+    update();
+    wm.reset(new WindowManager(cur_im.cols, cur_im.rows));
+    update();
+
+    std::cerr << "[ INFO] Moving to " << dir_scanner->getCurrentDir() << std::endl;
 }
 
 ImageViewer::~ImageViewer(){
@@ -46,66 +46,66 @@ void ImageViewer::enterMainLoop(){
         }else if(c == Command::UPPER_DIR){
 
             dir_scanner->goToParentDir();
-            std::cerr << "[INFO ] Moving to " << dir_scanner->getCurrentDir() << std::endl;
+            std::cerr << "[ INFO] Moving to " << dir_scanner->getCurrentDir() << std::endl;
             update();
                 
         }else if(c == Command::LOWER_DIR){
 
             dir_scanner->goToChildDirUsingHistory();
-            std::cerr << "[INFO ] Moving to " << dir_scanner->getCurrentDir() << std::endl;
+            std::cerr << "[ INFO] Moving to " << dir_scanner->getCurrentDir() << std::endl;
             update();            
             
         }else if(c == Command::NEXT_DIR){
 
             dir_scanner->goToNextImDir();
-            std::cerr << "[INFO ] Moving to " << dir_scanner->getCurrentDir() << std::endl;
+            std::cerr << "[ INFO] Moving to " << dir_scanner->getCurrentDir() << std::endl;
             update();
             
         }else if(c == Command::PREVIOUS_DIR){
 
             dir_scanner->goToPreviousImDir();
-            std::cerr << "[INFO ] Moving to " << dir_scanner->getCurrentDir() << std::endl;
+            std::cerr << "[ INFO] Moving to " << dir_scanner->getCurrentDir() << std::endl;
             update();
 
         }else if(c == Command::SCALE_UP){
 
-            std::cerr << "[INFO ] Scaling up" << std::endl;
+            std::cerr << "[ INFO] Scaling up" << std::endl;
             wm->scaleUp();
             update();
             
         }else if(c == Command::SCALE_DOWN){
 
-            std::cerr << "[INFO ] Scaling down" << std::endl;
+            std::cerr << "[ INFO] Scaling down" << std::endl;
             wm->scaleDown();
             update();
 
         }else if(c == Command::MOVE_RIGHT){
 
-            std::cerr << "[INFO ] Moving right" << std::endl;
+            std::cerr << "[ INFO] Moving right" << std::endl;
             wm->moveRight();
             update();
 
         }else if(c == Command::MOVE_LEFT){
 
-            std::cerr << "[INFO ] Moving left" << std::endl;
+            std::cerr << "[ INFO] Moving left" << std::endl;
             wm->moveLeft();
             update();
             
         }else if(c == Command::MOVE_UP){
 
-            std::cerr << "[INFO ] Moving up" << std::endl;
+            std::cerr << "[ INFO] Moving up" << std::endl;
             wm->moveUp();
             update();
             
         }else if(c == Command::MOVE_DOWN){
 
-            std::cerr << "[INFO ] Moving down" << std::endl;
+            std::cerr << "[ INFO] Moving down" << std::endl;
             wm->moveDown();
             update();
 
         }else if(c == Command::CLEAR){
 
-            std::cerr << "[IFNO ] Clear scale factor and offset" << std::endl;
+            std::cerr << "[ INFO] Clear scale factor and offset" << std::endl;
             wm->clearScaleAndOffset();
             update();
             
@@ -123,6 +123,7 @@ void ImageViewer::update(){
     if(dir_scanner){
 
         if(*dir_scanner){
+
             std::string tmp_path = dir_scanner->getCurrentIm();
 
             if(tmp_path != cur_path){
@@ -130,13 +131,17 @@ void ImageViewer::update(){
                 cur_path = tmp_path;
                 cur_im = cv::imread(cur_path);
             }
+
         }else{
             cur_path = dir_scanner->getCurrentDir();
             cur_im = cv::Mat();
         }
     }
-    
-    wm->update(cur_im, cur_path);
+
+    if(wm){
+        wm->update(cur_im, cur_path);
+    }
 }
+
 
 
