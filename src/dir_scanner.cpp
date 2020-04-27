@@ -7,7 +7,7 @@ DirScanner::DirScanner(const std::string& path)
 
     if(! fs::is_regular_file(fs::path(path))){ // directory given
 
-        cur_dir = fs::path(path);
+        cur_dir = fs::canonical(fs::path(path));
         updateEntries();
         findFirstIm();
 
@@ -17,7 +17,7 @@ DirScanner::DirScanner(const std::string& path)
         
     }else{                      // image given
         if(isImageFile(path)){
-            cur_dir = fs::path(path).parent_path();
+            cur_dir = fs::canonical(fs::path(path).parent_path());
             updateEntries();
             
             // check the im_ix of the given image
