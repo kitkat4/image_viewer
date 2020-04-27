@@ -28,10 +28,16 @@ public:
     std::string getCurrentIm()const;
     std::string goToNextIm();
     std::string goToPreviousIm();
-    void goToParentDir();
-    void goToChildDir();
-    void goToNextBrotherDir();
-    void goToPreviousBrotherDir();
+    bool goToNextDir();
+    bool goToNextImDir();
+    bool goToPreviousDir();
+    bool goToPreviousImDir();
+    bool goToParentDir();
+    bool goToFirstChildDir();
+    bool goToLastChildDir();
+    bool goToChildDirUsingHistory();
+    bool goToNextBrotherDir();
+    bool goToPreviousBrotherDir();
     std::string getCurrentDir()const;
 
     operator bool()const{
@@ -43,8 +49,8 @@ protected:
     void scanEntries();
     void findFirstIm();
 
-    std::string nextBrotherDir()const;
-    std::string previousBrotherDir()const;
+    bool nextBrotherDir(fs::path& brother_dir, const bool loop_enabled)const;
+    bool previousBrotherDir(fs::path& brother_dir, const bool loop_enabled)const;
     static bool isImageFile(const std::string& path_str);
     static bool compare_string(const std::string& lh, const std::string& rh);
 
@@ -54,6 +60,8 @@ protected:
     
     fs::path cur_dir;
     std::vector<fs::path> child_dir_history;
+
+    bool loop_dir;
     
     int im_ix;
 };

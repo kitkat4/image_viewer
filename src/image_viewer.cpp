@@ -51,7 +51,7 @@ void ImageViewer::enterMainLoop(){
                 
         }else if(c == Command::LOWER_DIR){
 
-            dir_scanner->goToChildDir();
+            dir_scanner->goToChildDirUsingHistory();
             std::cerr << "[INFO ] Moving to " << dir_scanner->getCurrentDir() << std::endl;
             update();            
             
