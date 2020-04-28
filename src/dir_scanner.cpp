@@ -362,7 +362,7 @@ void DirScanner::scanDir(const fs::path& path, std::vector<std::string>& result)
         buf.push_back(itr.path().generic_string());
     }
 
-    std::sort(buf.begin(), buf.end(), &compare_string);
+    std::sort(buf.begin(), buf.end(), &compareString);
 
     result = buf;
 }
@@ -513,7 +513,15 @@ bool DirScanner::isImageFile(const std::string& path_str){
 
 }
 
-bool DirScanner::compare_string(const std::string& lh, const std::string& rh){
+bool DirScanner::compareString(const std::string& lh, const std::string& rh){
+
+    {
+        bool compare_by_number_success, compare_by_number_result;
+        compareByNumber(lh, rh, compare_by_number_success, compare_by_number_result);
+        if(compare_by_number_success){
+            return compare_by_number_result;
+        }
+    }
 
     size_t min_size = lh.size() > rh.size() ? rh.size() : lh.size();
 
@@ -530,5 +538,95 @@ bool DirScanner::compare_string(const std::string& lh, const std::string& rh){
     }
 }
 
+void DirScanner::compareByNumber(const std::string& lh, const std::string& rh,
+                                 bool& success, bool& result){
+    
+    std::string lh_without_extension = fs::path(lh).replace_extension("").generic_string();
+    std::string rh_without_extension = fs::path(rh).replace_extension("").generic_string();
+        
+    bool lh_found_number = false;
+    bool lh_ends_with_number = false;
+    size_t lh_num_ix = 0;
+    std::string lh_num_str;
+    for(size_t i = 0; i < lh_without_extension.size(); i++){
+        
+        if(isNumber(lh_without_extension[i])){
 
+            lh_found_number = true;
+            lh_ends_with_number = true;
+            lh_num_ix = i;
+            lh_num_str.push_back(lh_without_extension[i]);
+            continue;
+            
+        }else if(lh_found_number){
+            
+            if(isNumber(lh_without_extension[i])){
+                lh_num_str.push_back(lh_without_extension[i]);
+                continue;
+            }else{
+                if(i == lh_without_extension.size() - 1 && lh_without_extension[i] == '/'){
+                    break;
+                }else{
+                    lh_found_number = false;
+                    lh_ends_with_number = false;
+                    continue;
+                }
+            }
+        }
+    }
+
+    bool rh_found_number = false;
+    bool rh_ends_with_number = false;
+    size_t rh_num_ix = 0;
+    std::string rh_num_str;
+    for(size_t i = 0; i < rh_without_extension.size(); i++){
+        
+        if(isNumber(rh_without_extension[i])){
+            
+            rh_found_number = true;
+            rh_ends_with_number = true;
+            rh_num_ix = i;
+            rh_num_str.push_back(rh_without_extension[i]);
+            continue;
+            
+        }else if(rh_found_number){
+            
+            if(isNumber(rh_without_extension[i])){
+                rh_num_str.push_back(rh_without_extension[i]);
+                continue;
+            }else{
+                if(i == rh_without_extension.size() - 1 && rh_without_extension[i] == '/'){
+                    break;
+                }else{
+                    rh_found_number = false;
+                    rh_ends_with_number = false;
+                    continue;
+                }
+            }
+        }
+    }
+
+    if(lh_ends_with_number && rh_ends_with_number){
+        std::stringstream lh_ss;
+        std::stringstream rh_ss;
+        int lh_num, rh_num;
+        lh_ss << lh_num_str;
+        rh_ss << rh_num_str;
+        lh_ss >> lh_num;
+        rh_ss >> rh_num;
+        
+        success = true;
+        result = lh_num < rh_num;
+        
+    }else{
+        success = false;
+    }
+
+}
+
+bool DirScanner::isNumber(const char c){
+
+    return (c == '0' || c == '1' || c == '2' || c == '3' || c == '4' ||
+            c == '5' || c == '6' || c == '7' || c == '8' || c == '9');
+}
 
