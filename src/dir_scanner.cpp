@@ -16,22 +16,16 @@ DirScanner::DirScanner(const std::string& path)
         }
         
     }else{                      // image given
-        if(isImageFile(path)){
-            cur_dir = fs::canonical(fs::path(path).parent_path());
-            updateEntries();
+        cur_dir = fs::canonical(fs::path(path).parent_path());
+        updateEntries();
             
-            // check the im_ix of the given image
-            for(int i = 0; i < (int)entries.size(); i++){
-                if(fs::path(entries[i]).filename() == fs::path(path).filename()){
-                    im_ix = i;
-                    ok = true;
-                    break;
-                }
+        // check the im_ix of the given image
+        for(int i = 0; i < (int)entries.size(); i++){
+            if(fs::path(entries[i]).filename() == fs::path(path).filename()){
+                im_ix = i;
+                ok = true;
+                break;
             }
-        }else{
-            std::cerr << my_utils_kk4::red
-                      << "[ERROR] The given path is not directory nor image file"
-                      << my_utils_kk4::default_style << std::endl;
         }
     }
 }
