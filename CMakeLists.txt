@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 3.1 FATAL_ERROR)
 
+project(image_viewer)
+
 # Decide whether to use boost or std filesystem.
 find_package(Boost COMPONENTS filesystem)
 if(Boost_FOUND)

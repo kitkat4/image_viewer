@@ -194,7 +194,7 @@ void WindowManager::drawImage(const cv::Mat& im){
         return;
     }
     
-    cv::cvtColor(tmp_im, tmp_im, CV_BGR2BGRA);
+    cv::cvtColor(tmp_im, tmp_im, cv::COLOR_BGR2BGRA);
     
     XImage *x_im = XCreateImage(dis, CopyFromParent, depth,
                                 ZPixmap, 0, (char*)tmp_im.data,
