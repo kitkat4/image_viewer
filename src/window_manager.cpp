@@ -5,15 +5,16 @@ WindowManager::WindowManager():
     shift_r_pressed(false),
     ctrl_l_pressed(false),
     ctrl_r_pressed(false),
-    left_button_pressed(false),
-    left_button_drag(false),
+    left_dragging(false),
+    maybe_left_click(false),
     max_queue_size(5),
     sliding_step(10),
     cur_offset_x(0.0),            // center
     cur_offset_y(0.0),            // center
     initial_scale(1.0),
     scale_base(std::sqrt(2.0)), cur_scale_exponent(0),
-    last_scale(1.0), fit_to_window(true), tile_size(64)
+    last_scale(1.0), fit_to_window(true), tile_size(64),
+    last_im_cols(1),last_im_rows(1)
 {
 
 }
@@ -23,15 +24,16 @@ WindowManager::WindowManager(const int width, const int height)
      shift_r_pressed(false),
      ctrl_l_pressed(false),
      ctrl_r_pressed(false),
-     left_button_pressed(false),
-     left_button_drag(false),
+     left_dragging(false),
+     maybe_left_click(false),
      max_queue_size(5),
      sliding_step(10),
      cur_offset_x(0.0),           // center
      cur_offset_y(0.0),           // center
      initial_scale(1.0),
      scale_base(std::sqrt(2.0)), cur_scale_exponent(0),
-     last_scale(1.0), fit_to_window(true), tile_size(64){
+    last_scale(1.0), fit_to_window(true), tile_size(64),
+    last_im_cols(1),last_im_rows(1){
 
 
     dis = XOpenDisplay(nullptr);
@@ -52,7 +54,7 @@ WindowManager::WindowManager(const int width, const int height)
     XSelectInput(dis, win,
                  ExposureMask | ButtonPressMask | ButtonReleaseMask |
                  Button1MotionMask | KeyPressMask | KeyReleaseMask |
-                 StructureNotifyMask);
+                 StructureNotifyMask | PointerMotionMask);
 
     gc = XCreateGC(dis, win, 0, 0);
 
@@ -87,6 +89,9 @@ void WindowManager::update(const cv::Mat& im, const std::string& current_path){
                     XInternAtom(dis, "UTF8_STRING", False),
                     8, PropModeReplace, (const unsigned char*)current_path.c_str(),
                     strlen(current_path.c_str()));
+
+    last_im_cols = im.cols;
+    last_im_rows = im.rows;
     
     if(im.empty()){
         XClearWindow(dis, win);
@@ -130,22 +135,22 @@ void WindowManager::scaleDown(){
 
 void WindowManager::moveRight(){
 
-    cur_offset_x += sliding_step;
+    cur_offset_x += sliding_step / last_scale;
 }
 
 void WindowManager::moveLeft(){
 
-    cur_offset_x -= sliding_step;
+    cur_offset_x -= sliding_step / last_scale;
 }
 
 void WindowManager::moveUp(){
 
-    cur_offset_y -= sliding_step;
+    cur_offset_y -= sliding_step / last_scale;
 }
 
 void WindowManager::moveDown(){
 
-    cur_offset_y += sliding_step;
+    cur_offset_y += sliding_step / last_scale;
 }
 
 void WindowManager::moveCenter(){
@@ -179,7 +184,7 @@ void WindowManager::drawImage(const cv::Mat& im){
 
     const int depth = DefaultDepth(dis, screen);
 
-    int upper_left_x, upper_left_y;
+    double upper_left_x, upper_left_y;
 
     cv::Mat tmp_im;
     
@@ -215,8 +220,8 @@ void WindowManager::drawImage(const cv::Mat& im){
 }
 
 void WindowManager::generateImageToDrawFitToWindow(const cv::Mat& in_im, cv::Mat * const out_im,
-                                                   int * const upper_left_x,
-                                                   int * const upper_left_y,
+                                                   double * const upper_left_x,
+                                                   double * const upper_left_y,
                                                    double * const scale)const{
 
     const double tmp_scale = calcScaleToFitToWindow(in_im);
@@ -227,8 +232,8 @@ void WindowManager::generateImageToDrawFitToWindow(const cv::Mat& in_im, cv::Mat
 
     getWindowSize(&width, &height);
 
-    *upper_left_x = (int)((width  - out_im->cols) / 2 + cur_offset_x);
-    *upper_left_y = (int)((height - out_im->rows) / 2 + cur_offset_y);
+    *upper_left_x = (width  - out_im->cols) / 2 + cur_offset_x;
+    *upper_left_y = (height - out_im->rows) / 2 + cur_offset_y;
 
     if(scale){
         *scale = tmp_scale;
@@ -238,13 +243,13 @@ void WindowManager::generateImageToDrawFitToWindow(const cv::Mat& in_im, cv::Mat
 }
 
 void WindowManager::generateImageToDraw(const cv::Mat& in_im, cv::Mat * const out_im,
-                                        int * const upper_left_x,
-                                        int * const upper_left_y,
+                                        double * const upper_left_x,
+                                        double * const upper_left_y,
                                         double * const scale)const{
 
     const double tmp_scale = initial_scale * std::pow(scale_base, cur_scale_exponent);
 
-    int u_l_x, u_l_y, l_r_x, l_r_y;
+    double u_l_x, u_l_y, l_r_x, l_r_y;
     getRegionToDraw(in_im, tmp_scale, &u_l_x, &u_l_y, &l_r_x, &l_r_y);
 
     if(u_l_x < 0){
@@ -370,8 +375,8 @@ void WindowManager::setDefaultBackground(){
 }
 
 void WindowManager::getRegionToDraw(const cv::Mat& in_im, const double scale,
-                                    int * const upper_left_x, int * const upper_left_y,
-                                    int * const lower_right_x, int * const lower_right_y)const{
+                                    double * const upper_left_x, double * const upper_left_y,
+                                    double * const lower_right_x, double * const lower_right_y)const{
 
     int window_width, window_height;
 
@@ -380,10 +385,12 @@ void WindowManager::getRegionToDraw(const cv::Mat& in_im, const double scale,
     const int tmp_width = window_width / scale;
     const int tmp_height = window_height / scale;
 
-    *upper_left_x = (int)(- (tmp_width / 2.0)  + in_im.cols / 2.0 - cur_offset_x);
-    *upper_left_y = (int)(- (tmp_height / 2.0) + in_im.rows / 2.0 - cur_offset_y);
-    *lower_right_x = (int)std::ceil((tmp_width / 2.0) + in_im.cols / 2.0 - cur_offset_x);
-    *lower_right_y = (int)std::ceil((tmp_height / 2.0) + in_im.rows / 2.0 - cur_offset_y);
+    *upper_left_x = - (tmp_width / 2.0)  + in_im.cols / 2.0 - cur_offset_x;
+    *upper_left_y = - (tmp_height / 2.0) + in_im.rows / 2.0 - cur_offset_y;
+    *lower_right_x = // std::ceil
+        ((tmp_width / 2.0) + in_im.cols / 2.0 - cur_offset_x);
+    *lower_right_y = // std::ceil
+        ((tmp_height / 2.0) + in_im.rows / 2.0 - cur_offset_y);
 
     return;
 }
@@ -527,7 +534,7 @@ WindowManager::Command WindowManager::processEvent(const XEvent& event){
 
         case Button1:           // left click
 
-            left_button_pressed = true;
+            maybe_left_click = true;
             return NOTHING;
 
         case Button4:           // wheel up
@@ -555,10 +562,8 @@ WindowManager::Command WindowManager::processEvent(const XEvent& event){
         switch(event.xbutton.button){
         case Button1:
 
-            if(left_button_drag){
-                left_button_drag = false;
-            }else if(left_button_pressed){
-                left_button_pressed = false;
+            if(maybe_left_click){
+                maybe_left_click = false;
                 return NEXT_IM;
             }
             
@@ -570,26 +575,39 @@ WindowManager::Command WindowManager::processEvent(const XEvent& event){
 
     }else if(event.type == MotionNotify){ // mouse motion
 
-        if(left_button_drag){
-            
-            XButtonEvent* tmp_event = (XButtonEvent*)&event;
-            cur_offset_x += (tmp_event->x - last_x_while_dragging) / last_scale;
-            cur_offset_y += (tmp_event->y - last_y_while_dragging) / last_scale;
-            last_x_while_dragging = tmp_event->x;
-            last_y_while_dragging = tmp_event->y;
+        XButtonEvent* tmp_event = (XButtonEvent*)&event;
 
-            return REDRAW;
-            
-        }else if(left_button_pressed = true){
-            
+        int x_on_im = 0, y_on_im = 0;
+
+        window2ImageCoord(tmp_event->x, tmp_event->y, &x_on_im, &y_on_im);
+
+        std::cout << "(x: " << x_on_im << ", y: " << y_on_im << ")" << std::endl;
+
+        if(tmp_event->state & Button1Mask){
+
+            if(maybe_left_click){
+                maybe_left_click = false;
+            }
+
             if(fit_to_window){
                 disableFitToWindow();
             }
-            
-            left_button_drag = true;
-            XButtonEvent* tmp_event = (XButtonEvent*)&event;
-            last_x_while_dragging = tmp_event->x;
-            last_y_while_dragging = tmp_event->y;
+
+            if(! left_dragging){
+                XButtonEvent* tmp_event = (XButtonEvent*)&event;
+                last_x_while_dragging = tmp_event->x;
+                last_y_while_dragging = tmp_event->y;
+                left_dragging = true;
+            }else{
+                cur_offset_x += (tmp_event->x - last_x_while_dragging) / last_scale;
+                cur_offset_y += (tmp_event->y - last_y_while_dragging) / last_scale;
+                last_x_while_dragging = tmp_event->x;
+                last_y_while_dragging = tmp_event->y;
+
+                return REDRAW;
+            }
+        }else{
+            left_dragging = false;
         }
 
         return NOTHING;
@@ -627,4 +645,14 @@ void WindowManager::disableFitToWindow(){
     
     fit_to_window = false;
     initial_scale = last_scale;
+}
+
+void WindowManager::window2ImageCoord(const int x_window, const int y_window,
+                                      int * const x_image, int * const y_image)const{
+
+    int window_width, window_height;
+    getWindowSize(&window_width, &window_height);
+
+    *x_image = (int)((x_window - window_width / 2.0) / last_scale + last_im_cols / 2.0 - cur_offset_x);
+    *y_image = (int)((y_window - window_height / 2.0) / last_scale + last_im_rows / 2.0 - cur_offset_y);
 }

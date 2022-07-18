@@ -60,10 +60,10 @@ protected:
 
     void drawImage(const cv::Mat& im);
     void generateImageToDrawFitToWindow(const cv::Mat& in_im, cv::Mat * const out_im,
-                                        int * const upper_left_x, int * const upper_left_y,
+                                        double * const upper_left_x, double * const upper_left_y,
                                         double * const scale)const;
     void generateImageToDraw(const cv::Mat& im, cv::Mat * const out_im,
-                             int * const upper_left_x, int * const upper_left_y,
+                             double * const upper_left_x, double * const upper_left_y,
                              double * const scale)const;
     double calcScaleToFitToWindow(const cv::Mat& im)const;
     void getWindowSize(int * const width, int * const height)const;
@@ -72,13 +72,16 @@ protected:
     // To get the coordinates of upper left and lower right point of the region
     // to draw. The values are represented in the image coordinates.
     void getRegionToDraw(const cv::Mat& in_im, const double scale,
-                         int * const upper_left_x, int * const upper_left_y,
-                         int * const lower_right_x, int * const lower_right_y)const;
+                         double * const upper_left_x, double * const upper_left_y,
+                         double * const lower_right_x, double * const lower_right_y)const;
     Command processEvent(const XEvent& event);
 
     bool isShiftPressed()const;
     bool isCtrlPressed()const;
     void disableFitToWindow();
+
+    void window2ImageCoord(const int x_window, const int y_window,
+                           int * const x_image, int * const y_image)const;
 
     Display * dis;
     int screen;
@@ -87,17 +90,17 @@ protected:
 
     bool shift_l_pressed, shift_r_pressed;
     bool ctrl_l_pressed, ctrl_r_pressed;
-    bool left_button_pressed;
-    bool left_button_drag;
+    bool left_dragging;
+    bool maybe_left_click;
     int last_x_while_dragging;
     int last_y_while_dragging;
 
     const size_t max_queue_size;
 
     // Must be odd number.
-    const int sliding_step;     // in pixel
-    double cur_offset_x;           // in pixel
-    double cur_offset_y;           // in pixel
+    const int sliding_step;     // in pixel of the window
+    double cur_offset_x;           // in pixel of the window
+    double cur_offset_y;           // in pixel of the window
     
     // scale = initial_scale * pow(scale_base, cur_scale_exponent)
     double initial_scale;
@@ -109,6 +112,8 @@ protected:
     bool fit_to_window;
 
     const int tile_size;
+
+    size_t last_im_cols, last_im_rows;
 };
 
 
