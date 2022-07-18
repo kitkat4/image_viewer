@@ -577,11 +577,18 @@ WindowManager::Command WindowManager::processEvent(const XEvent& event){
 
         XButtonEvent* tmp_event = (XButtonEvent*)&event;
 
-        int x_on_im = 0, y_on_im = 0;
+        {                       // print mouse position on the image
+            int x_on_im = 0, y_on_im = 0;
 
-        window2ImageCoord(tmp_event->x, tmp_event->y, &x_on_im, &y_on_im);
+            window2ImageCoord(tmp_event->x, tmp_event->y, &x_on_im, &y_on_im);
 
-        std::cout << "(x: " << x_on_im << ", y: " << y_on_im << ")" << std::endl;
+            x_on_im = (x_on_im < 0) ? 0 : x_on_im;
+            y_on_im = (y_on_im < 0) ? 0 : y_on_im;
+            x_on_im = (x_on_im >= last_im_cols) ? last_im_cols - 1: x_on_im;
+            y_on_im = (y_on_im >= last_im_cols) ? last_im_rows - 1: y_on_im;
+
+            std::cout << "(x: " << x_on_im << ", y: " << y_on_im << ")" << std::endl;
+        }
 
         if(tmp_event->state & Button1Mask){
 
