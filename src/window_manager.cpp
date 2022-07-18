@@ -382,8 +382,8 @@ void WindowManager::getRegionToDraw(const cv::Mat& in_im, const double scale,
 
     getWindowSize(&window_width, &window_height);
 
-    const int tmp_width = window_width / scale;
-    const int tmp_height = window_height / scale;
+    const double tmp_width = window_width / scale;
+    const double tmp_height = window_height / scale;
 
     *upper_left_x = - (tmp_width / 2.0)  + in_im.cols / 2.0 - cur_offset_x;
     *upper_left_y = - (tmp_height / 2.0) + in_im.rows / 2.0 - cur_offset_y;
