@@ -281,7 +281,7 @@ void WindowManager::generateImageToDraw(const cv::Mat& in_im, cv::Mat * const ou
     if(l_r_x - u_l_x <= 0 || l_r_y - u_l_y <= 0){
         *out_im = cv::Mat();
     }else{
-        cv::Rect roi(u_l_x, u_l_y, l_r_x - u_l_x, l_r_y - u_l_y);
+        cv::Rect roi(u_l_x, u_l_y, l_r_x - u_l_x + 1, l_r_y - u_l_y + 1);
         cv::resize(in_im(roi), *out_im, cv::Size(0,0), tmp_scale, tmp_scale, cv::INTER_AREA);
     }
 
