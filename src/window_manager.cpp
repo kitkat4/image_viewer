@@ -585,7 +585,7 @@ WindowManager::Command WindowManager::processEvent(const XEvent& event){
             x_on_im = (x_on_im < 0) ? 0 : x_on_im;
             y_on_im = (y_on_im < 0) ? 0 : y_on_im;
             x_on_im = (x_on_im >= last_im_cols) ? last_im_cols - 1: x_on_im;
-            y_on_im = (y_on_im >= last_im_cols) ? last_im_rows - 1: y_on_im;
+            y_on_im = (y_on_im >= last_im_rows) ? last_im_rows - 1: y_on_im;
 
             std::cout << "(x: " << x_on_im << ", y: " << y_on_im << ")" << std::endl;
         }
