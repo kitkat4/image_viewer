@@ -3,7 +3,7 @@
 
 
 DirScanner::DirScanner(const std::string& path)
-    :ok(false), cur_dir(fs::path()), loop_dir(false), im_ix(-1){
+    :ok(false), cur_dir(fs::path()), loop_dir(true), im_ix(-1){
 
     if(! fs::is_regular_file(fs::path(path))){ // directory given
 
