@@ -67,6 +67,7 @@ protected:
     void generateImageToDraw(const cv::Mat& im, cv::Mat * const out_im,
                              double * const upper_left_x, double * const upper_left_y,
                              double * const scale)const;
+    
     double calcScaleToFitToWindow(const cv::Mat& im)const;
     void getWindowSize(int * const width, int * const height)const;
     void setDefaultBackground();
@@ -77,6 +78,7 @@ protected:
                          double * const upper_left_x, double * const upper_left_y,
                          double * const lower_right_x, double * const lower_right_y)const;
     Command processEvent(const XEvent& event);
+    std::string generateWindowTitleFromPathString(const std::string& path_str)const;
 
     bool isShiftPressed()const;
     bool isCtrlPressed()const;

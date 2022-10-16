@@ -84,11 +84,13 @@ void WindowManager::update(const cv::Mat& im, const std::string& current_path){
 
     XStoreName(dis, win, current_path.c_str());
 
+    const std::string window_title = generateWindowTitleFromPathString(current_path);
+
     XChangeProperty(dis, win,
                     XInternAtom(dis, "_NET_WM_NAME", False),
                     XInternAtom(dis, "UTF8_STRING", False),
-                    8, PropModeReplace, (const unsigned char*)current_path.c_str(),
-                    strlen(current_path.c_str()));
+                    8, PropModeReplace, (const unsigned char*)window_title.c_str(),
+                    strlen(window_title.c_str()));
 
     last_im_cols = im.cols;
     last_im_rows = im.rows;
@@ -636,6 +638,38 @@ WindowManager::Command WindowManager::processEvent(const XEvent& event){
     }
 
     return NOTHING;
+}
+
+std::string WindowManager::generateWindowTitleFromPathString(
+    const std::string& path_str
+)const{
+
+    std::string ret;
+
+    size_t pos = 0;
+
+    const int len = static_cast<int>(path_str.size());
+    const size_t slash1_pos = path_str.rfind('/');
+
+    if(slash1_pos == std::string::npos){
+        pos = 0;
+    }else{
+        const size_t slash2_pos = path_str.substr(0, slash1_pos).rfind('/');
+
+        if(slash2_pos == std::string::npos){
+            pos = slash1_pos + 1;
+        }else{
+            pos = slash2_pos + 1;
+        }
+    }
+
+    if(pos == 0){
+        ret = path_str;
+    }else{
+        ret = path_str.substr(pos) + " (in " + path_str.substr(0, pos) + ")";
+    }
+
+    return ret;
 }
 
 bool WindowManager::isShiftPressed()const{
