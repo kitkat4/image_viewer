@@ -13,13 +13,12 @@ namespace fs = boost::filesystem;
 namespace fs = std::experimental::filesystem;
 #endif
 
-
+#include <thread>
+#include <future>
 #include <sstream>
 #include <iostream>
 #include <string>
 #include <vector>
-
-
 
 using Command = WindowManager::Command;
 

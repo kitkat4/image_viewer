@@ -350,15 +350,72 @@ void DirScanner::updateEntries(){
 
 void DirScanner::scanDir(const fs::path& path, std::vector<std::string>& result)const{
 
-    std::vector<std::string> buf;
+    bool abort_scan = false;
 
-    for(auto& itr : fs::directory_iterator(path)){
-        buf.push_back(itr.path().generic_string());
+    std::promise<void> promise;
+    std::future<void> future = promise.get_future();
+
+    std::function<void(std::promise<void>)> scan_dir_func =
+        [&path, &result, &abort_scan](std::promise<void> promise){
+
+        std::vector<std::string> buf;
+
+        const std::string path_str = path.generic_string();
+    
+        for(auto& itr : fs::directory_iterator(path)){
+
+            if(abort_scan){
+                std::cout << "[ INFO] Scanning aborted." << std::endl;
+                result = buf;
+                break;
+            }
+            
+            std::string tmp_path_str = itr.path().generic_string();
+        
+            if(tmp_path_str.find(path_str) != 0){
+                std::cout << "[ WARN] Path: " << tmp_path_str
+                          << " does not contain " << path_str
+                          << ". Skipping it." << std::endl;
+                continue;
+            }
+            // remove path_str at the head of tmp_path_str
+            tmp_path_str = tmp_path_str.substr(path_str.size());
+            buf.push_back(tmp_path_str);
+        }
+
+        if(! abort_scan){
+            std::sort(buf.begin(), buf.end(), &compareString);
+        }
+
+        for(size_t i = 0; i < buf.size(); i++){
+            buf[i] = path_str + buf[i];
+        }
+
+        result = buf;
+        promise.set_value();
+    };
+
+    std::thread scan_dir_thread(scan_dir_func, std::move(promise));
+
+    std::future_status status = future.wait_for(std::chrono::seconds(5));
+
+    switch(status){
+    case std::future_status::timeout:
+        std::cout << "[ WARN] Scanning dir is taking too long time."
+                  << " Trying to abort" << std::endl;
+        abort_scan = true;
+        break;
+        
+    case std::future_status::ready:
+        break;
+        
+    case std::future_status::deferred:
+    default:
+        std::cout << "[FATAL] Unexptected error" << std::endl;
+        std::terminate();
     }
 
-    std::sort(buf.begin(), buf.end(), &compareString);
-
-    result = buf;
+    scan_dir_thread.join();
 }
 
 void DirScanner::findFirstIm(){

@@ -25,11 +25,6 @@ link_directories(
 include_directories(include)
 find_package(OpenCV REQUIRED)
 find_package(X11 REQUIRED)
-# find_package(Qt5Core)
-# find_package(Qt5Gui)
-# find_package(Qt5Widgets)
-# find_package(Qt5Test)
-# find_package(Qt5Concurrent)
 
 
 add_executable(image_viewer
@@ -39,6 +34,7 @@ add_executable(image_viewer
   src/window_manager.cpp)
 
 target_link_libraries(image_viewer
+  pthread
   ${OpenCV_LIBS}
   ${X11_LIBRARIES}
   ${FILESYSTEM_LIBS}
