@@ -587,7 +587,7 @@ WindowManager::Command WindowManager::processEvent(const XEvent& event){
             x_on_im = (x_on_im >= last_im_cols) ? last_im_cols - 1: x_on_im;
             y_on_im = (y_on_im >= last_im_rows) ? last_im_rows - 1: y_on_im;
 
-            std::cout << "(x: " << x_on_im << ", y: " << y_on_im << ")" << std::endl;
+            std::cout << "\r(x: " << x_on_im << ", y: " << y_on_im << ")    " << std::flush;
         }
 
         if(tmp_event->state & Button1Mask){
