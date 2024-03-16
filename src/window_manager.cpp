@@ -185,35 +185,37 @@ void WindowManager::drawImage(const cv::Mat& im){
 
     double upper_left_x, upper_left_y;
 
-    cv::Mat tmp_im;
+    cv::Mat im_to_draw;
     
     if(fit_to_window){
-        generateImageToDrawFitToWindow(im, &tmp_im, &upper_left_x, &upper_left_y, &last_scale);
+        generateImageToDrawFitToWindow(im, &im_to_draw, &upper_left_x, &upper_left_y, &last_scale);
     }else{
-        generateImageToDraw(im, &tmp_im, &upper_left_x, &upper_left_y, &last_scale);
+        generateImageToDraw(im, &im_to_draw, &upper_left_x, &upper_left_y, &last_scale);
     }
 
-    if(tmp_im.empty()){
+    if(im_to_draw.empty()){
         XClearWindow(dis, win);
         return;
     }
     
-    cv::cvtColor(tmp_im, tmp_im, cv::COLOR_BGR2BGRA);
+    cv::cvtColor(im_to_draw, im_to_draw, cv::COLOR_BGR2BGRA);
     
     XImage *x_im = XCreateImage(dis, CopyFromParent, depth,
-                                ZPixmap, 0, (char*)tmp_im.data,
-                                tmp_im.cols, tmp_im.rows, 32, 0);
+                                ZPixmap, 0, (char*)im_to_draw.data,
+                                im_to_draw.cols, im_to_draw.rows, 32, 0);
 
-    Pixmap pix = XCreatePixmap(dis, win, tmp_im.cols, tmp_im.rows, depth);
+    Pixmap pix = XCreatePixmap(dis, win, im_to_draw.cols, im_to_draw.rows, depth);
     
-    XPutImage(dis, pix, gc, x_im, 0, 0, 0, 0, tmp_im.cols, tmp_im.rows);
+    XPutImage(dis, pix, gc, x_im, 0, 0, 0, 0, im_to_draw.cols, im_to_draw.rows);
 
     XClearWindow(dis, win);
     
-    XCopyArea(dis, pix, win, gc, 0, 0, tmp_im.cols, tmp_im.rows,
+    XCopyArea(dis, pix, win, gc, 0, 0, im_to_draw.cols, im_to_draw.rows,
               upper_left_x, upper_left_y);
 
     XFlush(dis);
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(30));
 
     return;
 }
@@ -284,7 +286,38 @@ void WindowManager::generateImageToDraw(const cv::Mat& in_im, cv::Mat * const ou
                      std::ceil(l_r_x) - std::floor(u_l_x),
                      std::ceil(l_r_y) - std::floor(u_l_y));
         cv::resize(in_im(roi), *out_im, cv::Size(0,0), 1.0/tmp_scale, 1.0/tmp_scale, cv::INTER_AREA);
+
         *out_im = out_im->rowRange((u_l_y - std::floor(u_l_y)) / tmp_scale, out_im->rows).colRange((u_l_x - std::floor(u_l_x)) / tmp_scale, out_im->cols);
+
+        if(tmp_scale < 0.05){
+            
+            for(int i = 0; i < in_im.rows; i++){
+                const int tmp_y = std::round((i - u_l_y) / tmp_scale);
+                if(tmp_y < 0){
+                    continue;
+                }else if(tmp_y >= out_im->rows){
+                    break;
+                }
+                for(int j = 0; j < out_im->cols; j++){
+                    for(int k = 0; k < out_im->channels(); k++){
+                        *(out_im->ptr(tmp_y) + out_im->elemSize() * j + k) = 0;
+                    }
+                }
+            }
+            for(int i = 0; i < in_im.cols; i++){
+                const int tmp_x = std::round((i - u_l_x) / tmp_scale);
+                if(tmp_x < 0){
+                    continue;
+                }else if(tmp_x >= out_im->cols){
+                    break;
+                }
+                for(int j = 0; j < out_im->rows; j++){
+                    for(int k = 0; k < out_im->channels(); k++){
+                        *(out_im->ptr(j) + out_im->elemSize() * tmp_x + k) = 0;
+                    }
+                }
+            }
+        }
     }
 
     if(scale){

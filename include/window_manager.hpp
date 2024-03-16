@@ -13,6 +13,8 @@
 
 #include <string>
 #include <cmath>
+#include <thread>
+#include <chrono>
 
 class WindowManager{
 
