@@ -117,7 +117,7 @@ protected:
 
     const int tile_size;
 
-    size_t last_im_cols, last_im_rows;
+    cv::Mat last_im;
 };
 
 

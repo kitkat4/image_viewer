@@ -12,9 +12,8 @@ WindowManager::WindowManager():
     cur_offset_x(0.0),            // center
     cur_offset_y(0.0),            // center
     initial_scale(1.0),
-    scale_base(std::sqrt(2.0)), cur_scale_exponent(0),
-    last_scale(1.0), fit_to_window(true), tile_size(64),
-    last_im_cols(1),last_im_rows(1)
+    scale_base(2.0), cur_scale_exponent(0),
+    last_scale(1.0), fit_to_window(true), tile_size(64)
 {
 
 }
@@ -31,9 +30,8 @@ WindowManager::WindowManager(const int width, const int height)
      cur_offset_x(0.0),           // center
      cur_offset_y(0.0),           // center
      initial_scale(1.0),
-     scale_base(std::sqrt(2.0)), cur_scale_exponent(0),
-    last_scale(1.0), fit_to_window(true), tile_size(64),
-    last_im_cols(1),last_im_rows(1){
+     scale_base(2.0), cur_scale_exponent(0),
+    last_scale(1.0), fit_to_window(true), tile_size(64){
 
 
     dis = XOpenDisplay(nullptr);
@@ -92,8 +90,7 @@ void WindowManager::update(const cv::Mat& im, const std::string& current_path){
                     8, PropModeReplace, (const unsigned char*)window_title.c_str(),
                     strlen(window_title.c_str()));
 
-    last_im_cols = im.cols;
-    last_im_rows = im.rows;
+    last_im = im;
     
     if(im.empty()){
         XClearWindow(dis, win);
@@ -121,7 +118,7 @@ void WindowManager::scaleUp(){
         disableFitToWindow();
     }
     
-    cur_scale_exponent += 1;
+    cur_scale_exponent -= 1;
 
 }
 
@@ -131,28 +128,28 @@ void WindowManager::scaleDown(){
         disableFitToWindow();
     }
     
-    cur_scale_exponent -= 1;
+    cur_scale_exponent += 1;
 
 }
 
 void WindowManager::moveRight(){
 
-    cur_offset_x += sliding_step / last_scale;
+    cur_offset_x += sliding_step * last_scale;
 }
 
 void WindowManager::moveLeft(){
 
-    cur_offset_x -= sliding_step / last_scale;
+    cur_offset_x -= sliding_step * last_scale;
 }
 
 void WindowManager::moveUp(){
 
-    cur_offset_y -= sliding_step / last_scale;
+    cur_offset_y -= sliding_step * last_scale;
 }
 
 void WindowManager::moveDown(){
 
-    cur_offset_y += sliding_step / last_scale;
+    cur_offset_y += sliding_step * last_scale;
 }
 
 void WindowManager::moveCenter(){
@@ -228,7 +225,7 @@ void WindowManager::generateImageToDrawFitToWindow(const cv::Mat& in_im, cv::Mat
 
     const double tmp_scale = calcScaleToFitToWindow(in_im);
     
-    cv::resize(in_im, *out_im, cv::Size(0, 0), tmp_scale, tmp_scale, cv::INTER_AREA);
+    cv::resize(in_im, *out_im, cv::Size(0, 0), 1.0/tmp_scale, 1.0/tmp_scale, cv::INTER_AREA);
 
     int width, height;
 
@@ -255,7 +252,7 @@ void WindowManager::generateImageToDraw(const cv::Mat& in_im, cv::Mat * const ou
     getRegionToDraw(in_im, tmp_scale, &u_l_x, &u_l_y, &l_r_x, &l_r_y);
 
     if(u_l_x < 0){
-        *upper_left_x = (-u_l_x) * tmp_scale;
+        *upper_left_x = (-u_l_x) / tmp_scale;
         u_l_x = 0;
     }else if(u_l_x >= in_im.cols){
         *upper_left_x = 0;
@@ -265,7 +262,7 @@ void WindowManager::generateImageToDraw(const cv::Mat& in_im, cv::Mat * const ou
     }
     
     if(u_l_y < 0){
-        *upper_left_y = (-u_l_y) * tmp_scale;
+        *upper_left_y = (-u_l_y) / tmp_scale;
         u_l_y = 0;
     }else if(u_l_y >= in_im.rows){
         *upper_left_y = 0;
@@ -274,8 +271,8 @@ void WindowManager::generateImageToDraw(const cv::Mat& in_im, cv::Mat * const ou
         *upper_left_y = 0;
     }
 
-    l_r_x = (l_r_x >= in_im.cols) ? in_im.cols - 1 : l_r_x;
-    l_r_y = (l_r_y >= in_im.rows) ? in_im.rows - 1 : l_r_y;
+    l_r_x = (l_r_x >= in_im.cols) ? in_im.cols - 0.5 : l_r_x;
+    l_r_y = (l_r_y >= in_im.rows) ? in_im.rows - 0.5 : l_r_y;
 
     l_r_x = (l_r_x < 0) ? 0 : l_r_x;
     l_r_y = (l_r_y < 0) ? 0 : l_r_y;
@@ -283,8 +280,11 @@ void WindowManager::generateImageToDraw(const cv::Mat& in_im, cv::Mat * const ou
     if(l_r_x - u_l_x <= 0 || l_r_y - u_l_y <= 0){
         *out_im = cv::Mat();
     }else{
-        cv::Rect roi(u_l_x, u_l_y, l_r_x - u_l_x + 1, l_r_y - u_l_y + 1);
-        cv::resize(in_im(roi), *out_im, cv::Size(0,0), tmp_scale, tmp_scale, cv::INTER_AREA);
+        cv::Rect roi(std::floor(u_l_x), std::floor(u_l_y),
+                     std::ceil(l_r_x) - std::floor(u_l_x),
+                     std::ceil(l_r_y) - std::floor(u_l_y));
+        cv::resize(in_im(roi), *out_im, cv::Size(0,0), 1.0/tmp_scale, 1.0/tmp_scale, cv::INTER_AREA);
+        *out_im = out_im->rowRange((u_l_y - std::floor(u_l_y)) / tmp_scale, out_im->rows).colRange((u_l_x - std::floor(u_l_x)) / tmp_scale, out_im->cols);
     }
 
     if(scale){
@@ -299,19 +299,14 @@ double WindowManager::calcScaleToFitToWindow(const cv::Mat& im)const{
     XWindowAttributes window_attributes;
     XGetWindowAttributes(dis, win, &window_attributes);
 
-    const double scale_v = (double)window_attributes.height / im.rows;
-    const double scale_h = (double)window_attributes.width / im.cols;
-    double tmp_scale = 1.0;
+    const double scale_v = (double)im.rows / window_attributes.height;
+    const double scale_h = (double)im.cols / window_attributes.width;
 
     // calc min(1.0, scale_v, scale_h)
-    if(scale_v < tmp_scale){
-        tmp_scale = scale_v;
+    if(scale_v > scale_h){
+        return scale_v;
     }
-    if(scale_h < tmp_scale){
-        tmp_scale = scale_h;
-    }
-
-    return tmp_scale;
+    return scale_h;
 }
 
 void WindowManager::getWindowSize(int * const width, int * const height)const{
@@ -384,15 +379,13 @@ void WindowManager::getRegionToDraw(const cv::Mat& in_im, const double scale,
 
     getWindowSize(&window_width, &window_height);
 
-    const double tmp_width = window_width / scale;
-    const double tmp_height = window_height / scale;
+    const double tmp_width = window_width * scale;
+    const double tmp_height = window_height * scale;
 
     *upper_left_x = - (tmp_width / 2.0)  + in_im.cols / 2.0 - cur_offset_x;
     *upper_left_y = - (tmp_height / 2.0) + in_im.rows / 2.0 - cur_offset_y;
-    *lower_right_x = // std::ceil
-        ((tmp_width / 2.0) + in_im.cols / 2.0 - cur_offset_x);
-    *lower_right_y = // std::ceil
-        ((tmp_height / 2.0) + in_im.rows / 2.0 - cur_offset_y);
+    *lower_right_x = ((tmp_width / 2.0) + in_im.cols / 2.0 - cur_offset_x);
+    *lower_right_y = ((tmp_height / 2.0) + in_im.rows / 2.0 - cur_offset_y);
 
     return;
 }
@@ -586,10 +579,42 @@ WindowManager::Command WindowManager::processEvent(const XEvent& event){
 
             x_on_im = (x_on_im < 0) ? 0 : x_on_im;
             y_on_im = (y_on_im < 0) ? 0 : y_on_im;
-            x_on_im = (x_on_im >= last_im_cols) ? last_im_cols - 1: x_on_im;
-            y_on_im = (y_on_im >= last_im_rows) ? last_im_rows - 1: y_on_im;
+            x_on_im = (x_on_im >= last_im.cols) ? last_im.cols - 1: x_on_im;
+            y_on_im = (y_on_im >= last_im.rows) ? last_im.rows - 1: y_on_im;
 
-            std::cout << "\r(x: " << x_on_im << ", y: " << y_on_im << ")    " << std::flush;
+            std::cout << "\rx = " << std::setw(5) << x_on_im << "/" << last_im.cols
+                      << " y = " << std::setw(5) << y_on_im << "/" << last_im.rows;
+            const int channels = last_im.channels();
+            for(int i = 0; i < channels; i++){
+                std::cout << " ch" << i << " = " << std::setw(4);
+                uint8_t const * const c = last_im.ptr(y_on_im) +
+                    x_on_im * last_im.elemSize() + i * last_im.elemSize1();
+                if(last_im.type() == CV_8UC(channels)){
+                    const uint8_t val = *c;
+                    std::cout << static_cast<int>(val);
+                }else if(last_im.type() == CV_8SC(channels)){
+                    const int8_t val = *c;
+                    std::cout << static_cast<int>(val);
+                }else if(last_im.type() == CV_16UC(channels)){
+                    const uint16_t val = *c;
+                    std::cout << static_cast<int>(val);
+                }else if(last_im.type() == CV_16SC(channels)){
+                    const int16_t val = *c;
+                    std::cout << static_cast<int>(val);
+                }else if(last_im.type() == CV_32SC(channels)){
+                    const int32_t val = *c;
+                    std::cout << static_cast<int>(val);
+                }else if(last_im.type() == CV_32FC(channels)){
+                    const float val = *c;
+                    std::cout << val;
+                }else if(last_im.type() == CV_64FC(channels)){
+                    const double val = *c;
+                    std::cout << val;
+                }else{
+                    " not supported";
+                }
+            }
+            std::cout << "    " << std::flush;
         }
 
         if(tmp_event->state & Button1Mask){
@@ -608,8 +633,8 @@ WindowManager::Command WindowManager::processEvent(const XEvent& event){
                 last_y_while_dragging = tmp_event->y;
                 left_dragging = true;
             }else{
-                cur_offset_x += (tmp_event->x - last_x_while_dragging) / last_scale;
-                cur_offset_y += (tmp_event->y - last_y_while_dragging) / last_scale;
+                cur_offset_x += (tmp_event->x - last_x_while_dragging) * last_scale;
+                cur_offset_y += (tmp_event->y - last_y_while_dragging) * last_scale;
                 last_x_while_dragging = tmp_event->x;
                 last_y_while_dragging = tmp_event->y;
 
@@ -694,6 +719,6 @@ void WindowManager::window2ImageCoord(const int x_window, const int y_window,
     int window_width, window_height;
     getWindowSize(&window_width, &window_height);
 
-    *x_image = (int)((x_window - window_width / 2.0) / last_scale + last_im_cols / 2.0 - cur_offset_x);
-    *y_image = (int)((y_window - window_height / 2.0) / last_scale + last_im_rows / 2.0 - cur_offset_y);
+    *x_image = std::floor((x_window - window_width / 2.0) * last_scale + last_im.cols / 2.0 - cur_offset_x);
+    *y_image = std::floor((y_window - window_height / 2.0) * last_scale + last_im.rows / 2.0 - cur_offset_y);
 }
