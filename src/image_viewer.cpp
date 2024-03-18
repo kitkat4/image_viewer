@@ -3,6 +3,33 @@
 
 ImageViewer::ImageViewer(const std::string& path){
 
+    std::cout << "Help" << std::endl
+              << std::setw(18) << "Right" << ": " << "NEXT_IM" << std::endl
+              << std::setw(18) << "Shift + Right" << ": " << "MOVE_RIGHT" << std::endl
+              << std::setw(18) << "Left" << ": " << "PREVIOUS_IM" << std::endl
+              << std::setw(18) << "Shift + Left" << ": " << "MOVE_LEFT" << std::endl
+              << std::setw(18) << "Return" << ": " << "NEXT_IM" << std::endl
+              << std::setw(18) << "Shift + Return" << ": " << "PREVIOUS_IM" << std::endl
+              << std::setw(18) << "Up" << ": " << "PREVIOUS_BROTHER_DIR" << std::endl
+              << std::setw(18) << "Shift + Up" << ": " << "MOVE_UP" << std::endl
+              << std::setw(18) << "Ctrl + Up" << ": " << "SCALE_UP" << std::endl
+              << std::setw(18) << "Down" << ": " << "NEXT_BROTHER_DIR" << std::endl
+              << std::setw(18) << "Shift + Down" << ": " << "MOVE_DOWN" << std::endl
+              << std::setw(18) << "Ctrl + Down" << ": " << "SCALE_DOWN" << std::endl
+              << std::setw(18) << "Page_Up" << ": " << "UPPER_DIR" << std::endl            
+              << std::setw(18) << "Page_Down" << ": " << "LOWER_DIR" << std::endl
+              << std::setw(18) << "+" << ": " << "SCALE_UP" << std::endl
+              << std::setw(18) << "-" << ": " << "SCALE_DOWN" << std::endl
+              << std::setw(18) << "c" << ": " << "CLEAR" << std::endl
+              << std::setw(18) << "q" << ": " << "QUIT" << std::endl
+              << std::setw(18) << "Left click" << ": " << "Keep pixel info" << std::endl
+              << std::setw(18) << "Wheel up" << ": " << "PREVIOUS_IM" << std::endl
+              << std::setw(18) << "Ctrl + Wheel up" << ": " << "SCALE_UP" << std::endl
+              << std::setw(18) << "Wheel down" << ": " << "NEXT_IM" << std::endl
+              << std::setw(18) << "Ctrl + Wheel down" << ": " << "SCALE_DOWN" << std::endl
+              << std::setw(18) << "Drag" << ": " << "Move image" << std::endl
+              << std::endl;
+        
     dir_scanner.reset(new DirScanner(path));
     std::cerr << "[ INFO] Moving to " << dir_scanner->getCurrentDir() << std::endl;
     update();
@@ -12,6 +39,7 @@ ImageViewer::ImageViewer(const std::string& path){
 
 ImageViewer::~ImageViewer(){
 
+    std::cout << std::endl;
 }
 
 void ImageViewer::enterMainLoop(){
@@ -122,7 +150,6 @@ void ImageViewer::enterMainLoop(){
 
         }else if(c == Command::CLEAR){
 
-            std::cerr << "[ INFO] Clear scale factor and offset" << std::endl;
             wm->clearScaleAndOffset();
             update();
             
@@ -147,7 +174,7 @@ void ImageViewer::update(){
 
                 cur_path = tmp_path;
                 cur_im = cv::imread(cur_path);
-                std::cout << "\r                                                             "
+                std::cout << "\r                                                                  "
                           << std::endl
                           << cur_path << std::endl
                           << "width   : " << cur_im.cols << std::endl

@@ -623,8 +623,8 @@ WindowManager::Command WindowManager::processEvent(const XEvent& event){
             x_on_im = (x_on_im >= last_im.cols) ? last_im.cols - 1: x_on_im;
             y_on_im = (y_on_im >= last_im.rows) ? last_im.rows - 1: y_on_im;
 
-            std::cout << "\rx = " << std::setw(5) << x_on_im << "/" << last_im.cols
-                      << " y = " << std::setw(5) << y_on_im << "/" << last_im.rows;
+            std::cout << "\rx = " << std::setw(5) << x_on_im 
+                      << " y = " << std::setw(5) << y_on_im;
             const int channels = last_im.channels();
             for(int i = 0; i < channels; i++){
                 std::cout << " ch" << i << " = " << std::setw(4);
