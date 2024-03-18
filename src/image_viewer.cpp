@@ -4,11 +4,10 @@
 ImageViewer::ImageViewer(const std::string& path){
 
     dir_scanner.reset(new DirScanner(path));
+    std::cerr << "[ INFO] Moving to " << dir_scanner->getCurrentDir() << std::endl;
     update();
     wm.reset(new WindowManager(cur_im.cols, cur_im.rows));
     update();
-
-    std::cerr << "[ INFO] Moving to " << dir_scanner->getCurrentDir() << std::endl;
 }
 
 ImageViewer::~ImageViewer(){
@@ -93,37 +92,31 @@ void ImageViewer::enterMainLoop(){
 
         }else if(c == Command::SCALE_UP){
 
-            std::cerr << "[ INFO] Scaling up" << std::endl;
             wm->scaleUp();
             update();
             
         }else if(c == Command::SCALE_DOWN){
 
-            std::cerr << "[ INFO] Scaling down" << std::endl;
             wm->scaleDown();
             update();
 
         }else if(c == Command::MOVE_RIGHT){
 
-            std::cerr << "[ INFO] Moving right" << std::endl;
             wm->moveRight();
             update();
 
         }else if(c == Command::MOVE_LEFT){
 
-            std::cerr << "[ INFO] Moving left" << std::endl;
             wm->moveLeft();
             update();
             
         }else if(c == Command::MOVE_UP){
 
-            std::cerr << "[ INFO] Moving up" << std::endl;
             wm->moveUp();
             update();
             
         }else if(c == Command::MOVE_DOWN){
 
-            std::cerr << "[ INFO] Moving down" << std::endl;
             wm->moveDown();
             update();
 
@@ -154,6 +147,30 @@ void ImageViewer::update(){
 
                 cur_path = tmp_path;
                 cur_im = cv::imread(cur_path);
+                std::cout << "\r                                                             "
+                          << std::endl
+                          << cur_path << std::endl
+                          << "width   : " << cur_im.cols << std::endl
+                          << "height  : " << cur_im.rows << std::endl
+                          << "channels: " << cur_im.channels() << std::endl;
+                const int channels = cur_im.channels();
+                if(cur_im.type() == CV_8UC(channels)){
+                    std::cout << "type    : 8U" << std::endl;
+                }else if(cur_im.type() == CV_8SC(channels)){
+                    std::cout << "type    : 8S" << std::endl;
+                }else if(cur_im.type() == CV_16UC(channels)){
+                    std::cout << "type    : 16U" << std::endl;
+                }else if(cur_im.type() == CV_16SC(channels)){
+                    std::cout << "type    : 16S" << std::endl;
+                }else if(cur_im.type() == CV_32SC(channels)){
+                    std::cout << "type    : 32S" << std::endl;
+                }else if(cur_im.type() == CV_32FC(channels)){
+                    std::cout << "type    : 32F" << std::endl;
+                }else if(cur_im.type() == CV_64FC(channels)){
+                    std::cout << "type    : 64F" << std::endl;
+                }else{
+                    std::cout << "type    : unknown" << std::endl;
+                }
             }
 
         }else{

@@ -215,7 +215,7 @@ void WindowManager::drawImage(const cv::Mat& im){
 
     XFlush(dis);
 
-    std::this_thread::sleep_for(std::chrono::milliseconds(30));
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
     return;
 }
@@ -290,6 +290,13 @@ void WindowManager::generateImageToDraw(const cv::Mat& in_im, cv::Mat * const ou
         *out_im = out_im->rowRange((u_l_y - std::floor(u_l_y)) / tmp_scale, out_im->rows).colRange((u_l_x - std::floor(u_l_x)) / tmp_scale, out_im->cols);
 
         if(tmp_scale < 0.05){
+
+            float val = 100.0f;
+            if(last_im.type() == CV_32FC(last_im.channels())){
+                val = 0.5f;
+            }else if(last_im.type() == CV_64FC(last_im.channels())){
+                val = 0.5;
+            }
             
             for(int i = 0; i < in_im.rows; i++){
                 const int tmp_y = std::round((i - u_l_y) / tmp_scale);
@@ -300,7 +307,7 @@ void WindowManager::generateImageToDraw(const cv::Mat& in_im, cv::Mat * const ou
                 }
                 for(int j = 0; j < out_im->cols; j++){
                     for(int k = 0; k < out_im->channels(); k++){
-                        *(out_im->ptr(tmp_y) + out_im->elemSize() * j + k) = 0;
+                        *(out_im->ptr(tmp_y) + out_im->elemSize() * j + k) = (j % 2 ? 0 : val);
                     }
                 }
             }
@@ -313,7 +320,7 @@ void WindowManager::generateImageToDraw(const cv::Mat& in_im, cv::Mat * const ou
                 }
                 for(int j = 0; j < out_im->rows; j++){
                     for(int k = 0; k < out_im->channels(); k++){
-                        *(out_im->ptr(j) + out_im->elemSize() * tmp_x + k) = 0;
+                        *(out_im->ptr(j) + out_im->elemSize() * tmp_x + k) = (j % 2 ? 0 : val);
                     }
                 }
             }
@@ -592,7 +599,8 @@ WindowManager::Command WindowManager::processEvent(const XEvent& event){
 
             if(maybe_left_click){
                 maybe_left_click = false;
-                return NEXT_IM;
+                std::cout << std::endl;
+                return NOTHING;
             }
             
             return NOTHING;

@@ -57,11 +57,8 @@ std::string DirScanner::goToNextIm(){
         // no image found
         if(check_count >= (int)entries.size()){
             std::cerr << my_utils_kk4::red
-                      << "[ERROR] Unexpected error occured while searching the next image, "
-                      << "at line " << __LINE__ << " in " << __FILE__
+                      << "[ERROR] No image found"
                       << my_utils_kk4::default_style << std::endl;
-            std::cerr << "check_count: " << check_count << std::endl;
-            std::cerr << "entries.size: " << entries.size() << std::endl;
             ok = false;
             im_ix = -1;
             return "";
@@ -98,8 +95,7 @@ std::string DirScanner::goToPreviousIm(){
         // no image found
         if(check_count >= (int)entries.size()){
             std::cerr << my_utils_kk4::red
-                      << "[ERROR] Unexpected error occured while searching the next image, "
-                      << "at line " << __LINE__ << " in " << __FILE__
+                      << "[ERROR] No image found"
                       << my_utils_kk4::default_style << std::endl;
             ok = false;
             im_ix = -1;
