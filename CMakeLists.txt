@@ -2,6 +2,11 @@ cmake_minimum_required(VERSION 3.1 FATAL_ERROR)
 
 project(image_viewer)
 
+add_compile_options(-O2 -Wall)
+
+set(Boost_USE_STATIC_LIBS ON)
+
+
 # Decide whether to use boost or std filesystem.
 find_package(Boost COMPONENTS filesystem)
 if(Boost_FOUND)
@@ -17,15 +22,9 @@ else()
   set(FILESYSTEM_LIBS stdc++fs)
 endif()
 
-link_directories(
-  /usr/local/lib
-  /usr/local/share/OpenCV/3rdparty/lib
-  )
-
 include_directories(include)
 find_package(OpenCV REQUIRED)
 find_package(X11 REQUIRED)
-
 
 add_executable(image_viewer
   src/main.cpp

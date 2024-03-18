@@ -45,9 +45,7 @@ ImageViewer::~ImageViewer(){
 void ImageViewer::enterMainLoop(){
 
     if(! dir_scanner){
-        std::cerr << my_utils_kk4::red
-                  << "[ERROR] No instance created"
-                  << my_utils_kk4::default_color
+        std::cerr << "[ERROR] No instance created"
                   << std::endl;
         return;
     }

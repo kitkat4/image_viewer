@@ -39,9 +39,8 @@ std::string DirScanner::getCurrentIm()const{
     if(entries.size() > 0){
         return entries[im_ix];
     }else{
-        std::cerr << my_utils_kk4::red
-                  << "[ERROR] No images found."
-                  << my_utils_kk4::default_style << std::endl;
+        std::cerr << "[ERROR] No images found."
+                  << std::endl;
         return "";
     }
 }
@@ -56,9 +55,8 @@ std::string DirScanner::goToNextIm(){
 
         // no image found
         if(check_count >= (int)entries.size()){
-            std::cerr << my_utils_kk4::red
-                      << "[ERROR] No image found"
-                      << my_utils_kk4::default_style << std::endl;
+            std::cerr << "[ERROR] No image found"
+                      << std::endl;
             ok = false;
             im_ix = -1;
             return "";
@@ -94,9 +92,8 @@ std::string DirScanner::goToPreviousIm(){
 
         // no image found
         if(check_count >= (int)entries.size()){
-            std::cerr << my_utils_kk4::red
-                      << "[ERROR] No image found"
-                      << my_utils_kk4::default_style << std::endl;
+            std::cerr << "[ERROR] No image found"
+                      << std::endl;
             ok = false;
             im_ix = -1;
             return "";
@@ -466,9 +463,8 @@ bool DirScanner::nextBrotherDir(fs::path& brother_dir, const bool loop_enabled)c
             return false;
         }
     }else{
-        std::cerr << my_utils_kk4::red
-                  << "[ERROR] Unexpected error occured at line " << __LINE__
-                  << " in " << __FILE__ << my_utils_kk4::default_style << std::endl;
+        std::cerr << "[ERROR] Unexpected error occured at line " << __LINE__
+                  << " in " << __FILE__ << std::endl;
         return false;
     }
 }
@@ -511,9 +507,8 @@ bool DirScanner::previousBrotherDir(fs::path& brother_dir, const bool loop_enabl
         }
     }
 
-    std::cerr << my_utils_kk4::red
-              << "[ERROR] Unexpected error occured at line " << __LINE__
-              << " in " << __FILE__ << my_utils_kk4::default_style << std::endl;
+    std::cerr << "[ERROR] Unexpected error occured at line " << __LINE__
+              << " in " << __FILE__ << std::endl;
     
     return false;
 }

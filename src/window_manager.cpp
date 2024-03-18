@@ -37,10 +37,8 @@ WindowManager::WindowManager(const int width, const int height)
     dis = XOpenDisplay(nullptr);
 
     if(! dis){
-        std::cerr << my_utils_kk4::red
-                  << "[ERROR] Failed to open a new window (" << __FILE__
+        std::cerr << "[ERROR] Failed to open a new window (" << __FILE__
                   << ", line " << __LINE__ << ")"
-                  << my_utils_kk4::default_color
                   << std::endl;
     }
     
@@ -177,9 +175,7 @@ void WindowManager::closeWindow(){
 
 void WindowManager::drawImage(const cv::Mat& im){
 
-    XColor c;
     cv::Vec3b v;
-    Colormap cmap = XDefaultColormap(dis, screen);
 
     const int depth = DefaultDepth(dis, screen);
 
@@ -651,8 +647,6 @@ WindowManager::Command WindowManager::processEvent(const XEvent& event){
                 }else if(last_im.type() == CV_64FC(channels)){
                     const double val = *c;
                     std::cout << val;
-                }else{
-                    " not supported";
                 }
             }
             std::cout << "    " << std::flush;
@@ -714,7 +708,6 @@ std::string WindowManager::generateWindowTitleFromPathString(
 
     size_t pos = 0;
 
-    const int len = static_cast<int>(path_str.size());
     const size_t slash1_pos = path_str.rfind('/');
 
     if(slash1_pos == std::string::npos){

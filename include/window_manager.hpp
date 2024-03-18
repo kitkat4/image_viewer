@@ -1,7 +1,5 @@
 #pragma once
 
-#include "my_utils_kk4.hpp"
-
 #include <opencv2/opencv.hpp>
 
 #include <X11/Xlib.h>
@@ -101,7 +99,7 @@ protected:
     int last_x_while_dragging;
     int last_y_while_dragging;
 
-    const size_t max_queue_size;
+    const int max_queue_size;
 
     // Must be odd number.
     const int sliding_step;     // in pixel of the window
