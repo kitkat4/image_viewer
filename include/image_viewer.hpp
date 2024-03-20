@@ -21,11 +21,14 @@ public:
 protected:
 
     void update();
+    void showHelp()const;
     
     std::unique_ptr<DirScanner> dir_scanner;
     std::unique_ptr<WindowManager> wm;
     cv::Mat cur_im;
     
     std::string cur_path;
+
+    const int skip_count;
 };
 

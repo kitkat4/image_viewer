@@ -1,34 +1,10 @@
 #include "image_viewer.hpp"
 
 
-ImageViewer::ImageViewer(const std::string& path){
+ImageViewer::ImageViewer(const std::string& path):
+    skip_count(10){
 
-    std::cout << "Help" << std::endl
-              << std::setw(18) << "Right" << ": " << "NEXT_IM" << std::endl
-              << std::setw(18) << "Shift + Right" << ": " << "MOVE_RIGHT" << std::endl
-              << std::setw(18) << "Left" << ": " << "PREVIOUS_IM" << std::endl
-              << std::setw(18) << "Shift + Left" << ": " << "MOVE_LEFT" << std::endl
-              << std::setw(18) << "Return" << ": " << "NEXT_IM" << std::endl
-              << std::setw(18) << "Shift + Return" << ": " << "PREVIOUS_IM" << std::endl
-              << std::setw(18) << "Up" << ": " << "PREVIOUS_BROTHER_DIR" << std::endl
-              << std::setw(18) << "Shift + Up" << ": " << "MOVE_UP" << std::endl
-              << std::setw(18) << "Ctrl + Up" << ": " << "SCALE_UP" << std::endl
-              << std::setw(18) << "Down" << ": " << "NEXT_BROTHER_DIR" << std::endl
-              << std::setw(18) << "Shift + Down" << ": " << "MOVE_DOWN" << std::endl
-              << std::setw(18) << "Ctrl + Down" << ": " << "SCALE_DOWN" << std::endl
-              << std::setw(18) << "Page_Up" << ": " << "UPPER_DIR" << std::endl            
-              << std::setw(18) << "Page_Down" << ": " << "LOWER_DIR" << std::endl
-              << std::setw(18) << "+" << ": " << "SCALE_UP" << std::endl
-              << std::setw(18) << "-" << ": " << "SCALE_DOWN" << std::endl
-              << std::setw(18) << "c" << ": " << "CLEAR" << std::endl
-              << std::setw(18) << "q" << ": " << "QUIT" << std::endl
-              << std::setw(18) << "Left click" << ": " << "Keep pixel info" << std::endl
-              << std::setw(18) << "Wheel up" << ": " << "PREVIOUS_IM" << std::endl
-              << std::setw(18) << "Ctrl + Wheel up" << ": " << "SCALE_UP" << std::endl
-              << std::setw(18) << "Wheel down" << ": " << "NEXT_IM" << std::endl
-              << std::setw(18) << "Ctrl + Wheel down" << ": " << "SCALE_DOWN" << std::endl
-              << std::setw(18) << "Drag" << ": " << "Move image" << std::endl
-              << std::endl;
+    showHelp();
         
     dir_scanner.reset(new DirScanner(path));
     std::cerr << "[ INFO] Moving to " << dir_scanner->getCurrentDir() << std::endl;
@@ -155,6 +131,36 @@ void ImageViewer::enterMainLoop(){
             
             wm->closeWindow();
             return;
+        }else if(c == Command::SHOW_HELP){
+
+            showHelp();
+            
+        }else if(c == Command::SKIP_FOWARD){
+
+            for(int i = 0; i < skip_count; i++){
+                dir_scanner->goToNextIm();
+            }
+            update();
+            
+        }else if(c == Command::SKIP_BACKWARD){
+
+            for(int i = 0; i < skip_count; i++){
+                dir_scanner->goToPreviousIm();
+            }
+            update();
+        }else if(c == Command::SKIP_FOWARD_FAST){
+
+            for(int i = 0; i < skip_count * 10; i++){
+                dir_scanner->goToNextIm();
+            }
+            update();
+            
+        }else if(c == Command::SKIP_BACKWARD_FAST){
+
+            for(int i = 0; i < skip_count * 10; i++){
+                dir_scanner->goToPreviousIm();
+            }
+            update();
         }
         
     } // end of while
@@ -210,4 +216,39 @@ void ImageViewer::update(){
 }
 
 
+void ImageViewer::showHelp()const{
+
+    std::cout << "Help" << std::endl
+              << std::setw(18) << "Right" << ": " << "NEXT_IM" << std::endl
+              << std::setw(18) << "Shift + Right" << ": " << "MOVE_RIGHT" << std::endl
+              << std::setw(18) << "Left" << ": " << "PREVIOUS_IM" << std::endl
+              << std::setw(18) << "Shift + Left" << ": " << "MOVE_LEFT" << std::endl
+              << std::setw(18) << "Return" << ": " << "NEXT_IM" << std::endl
+              << std::setw(18) << "Shift + Return" << ": " << "PREVIOUS_IM" << std::endl
+              << std::setw(18) << "Up" << ": " << "PREVIOUS_IM" << std::endl
+              << std::setw(18) << "Shift + Up" << ": " << "MOVE_UP" << std::endl
+              << std::setw(18) << "Ctrl + Up" << ": " << "SCALE_UP" << std::endl
+              << std::setw(18) << "Alt + Up" << ": " << "PREVIOUS_BROTHER_DIR" << std::endl
+              << std::setw(18) << "Down" << ": " << "NEXT_IM" << std::endl
+              << std::setw(18) << "Shift + Down" << ": " << "MOVE_DOWN" << std::endl
+              << std::setw(18) << "Ctrl + Down" << ": " << "SCALE_DOWN" << std::endl
+              << std::setw(18) << "Alt + Down" << ": " << "NEXT_BROTHER_DIR" << std::endl
+              << std::setw(18) << "Page_Up" << ": " << "SKIP_BACKWARD" << std::endl
+              << std::setw(18) << "Ctrl + Page_Up" << ": " << "SKIP_BACKWARD_FAST" << std::endl            
+              << std::setw(18) << "Page_Down" << ": " << "SKIP_FOWARD" << std::endl
+              << std::setw(18) << "Ctrl + Page_Down" << ": " << "SKIP_FOWARD_FAST" << std::endl
+              << std::setw(18) << "+" << ": " << "SCALE_UP" << std::endl
+              << std::setw(18) << "-" << ": " << "SCALE_DOWN" << std::endl
+              << std::setw(18) << "c" << ": " << "CLEAR" << std::endl
+              << std::setw(18) << "q" << ": " << "QUIT" << std::endl
+              << std::setw(18) << "h" << ": " << "SHOW_HELP" << std::endl
+              << std::setw(18) << "Left click" << ": " << "Keep pixel info" << std::endl
+              << std::setw(18) << "Wheel up" << ": " << "PREVIOUS_IM" << std::endl
+              << std::setw(18) << "Ctrl + Wheel up" << ": " << "SCALE_UP" << std::endl
+              << std::setw(18) << "Wheel down" << ": " << "NEXT_IM" << std::endl
+              << std::setw(18) << "Ctrl + Wheel down" << ": " << "SCALE_DOWN" << std::endl
+              << std::setw(18) << "Drag" << ": " << "Move image" << std::endl
+              << std::endl;
+
+}
 

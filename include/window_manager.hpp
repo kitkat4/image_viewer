@@ -39,7 +39,12 @@ public:
         MOVE_DOWN,
         // MOVE_CENTER,
         CLEAR,
-        QUIT
+        QUIT,
+        SHOW_HELP,
+        SKIP_FOWARD,
+        SKIP_BACKWARD,
+        SKIP_FOWARD_FAST,
+        SKIP_BACKWARD_FAST
     }Command;
     
     WindowManager();
@@ -82,6 +87,7 @@ protected:
 
     bool isShiftPressed()const;
     bool isCtrlPressed()const;
+    bool isAltPressed()const;
     void disableFitToWindow();
 
     void window2ImageCoord(const int x_window, const int y_window,
@@ -94,6 +100,7 @@ protected:
 
     bool shift_l_pressed, shift_r_pressed;
     bool ctrl_l_pressed, ctrl_r_pressed;
+    bool alt_l_pressed, alt_r_pressed;
     bool left_dragging;
     bool maybe_left_click;
     int last_x_while_dragging;

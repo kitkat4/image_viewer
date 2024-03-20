@@ -68,7 +68,7 @@ std::string DirScanner::goToNextIm(){
             im_ix = 0;
         }
         
-        if(fs::is_regular_file(fs::path(entries[im_ix])) && isImageFile(entries[im_ix])){
+        if(isImageFile(entries[im_ix])){
             if(im_ix == old_im_ix){
                 std::cerr << "[INFO ] Image search finished, but no new images found."
                           << std::endl;
@@ -105,7 +105,7 @@ std::string DirScanner::goToPreviousIm(){
             im_ix = entries.size() - 1;
         }
         
-        if(fs::is_regular_file(fs::path(entries[im_ix])) && isImageFile(entries[im_ix])){
+        if(isImageFile(entries[im_ix])){
             
             if(im_ix == old_im_ix){
                 std::cerr << "[INFO ] Image search finished, but no new images found."
@@ -308,7 +308,9 @@ bool DirScanner::goToNextBrotherDir(){
     if(ret){
         cur_dir = tmp;
         updateEntries();
-        findFirstIm();
+        if(im_ix >= static_cast<int>(entries.size()) || ! isImageFile(entries[im_ix])){
+            findFirstIm();
+        }
     }
 
     return ret;
@@ -324,7 +326,9 @@ bool DirScanner::goToPreviousBrotherDir(){
     if(ret){
         cur_dir = tmp;
         updateEntries();
-        findFirstIm();
+        if(im_ix >= static_cast<int>(entries.size()) || ! isImageFile(entries[im_ix])){
+            findFirstIm();
+        }
     }
 
     return ret;
@@ -415,7 +419,7 @@ void DirScanner::findFirstIm(){
 
     for(int i = 0; i < (int)entries.size(); i++){
 
-        if(fs::is_regular_file(fs::path(entries[i])) && isImageFile(entries[i])){
+        if(isImageFile(entries[i])){
             im_ix = i;
             ok = true;
             return;

@@ -5,6 +5,8 @@ WindowManager::WindowManager():
     shift_r_pressed(false),
     ctrl_l_pressed(false),
     ctrl_r_pressed(false),
+    alt_l_pressed(false),
+    alt_r_pressed(false),
     left_dragging(false),
     maybe_left_click(false),
     max_queue_size(5),
@@ -132,22 +134,22 @@ void WindowManager::scaleDown(){
 
 void WindowManager::moveRight(){
 
-    cur_offset_x += sliding_step * last_scale;
+    cur_offset_x -= sliding_step * last_scale;
 }
 
 void WindowManager::moveLeft(){
 
-    cur_offset_x -= sliding_step * last_scale;
+    cur_offset_x += sliding_step * last_scale;
 }
 
 void WindowManager::moveUp(){
 
-    cur_offset_y -= sliding_step * last_scale;
+    cur_offset_y += sliding_step * last_scale;
 }
 
 void WindowManager::moveDown(){
 
-    cur_offset_y += sliding_step * last_scale;
+    cur_offset_y -= sliding_step * last_scale;
 }
 
 void WindowManager::moveCenter(){
@@ -465,8 +467,11 @@ WindowManager::Command WindowManager::processEvent(const XEvent& event){
                 return MOVE_UP;
             }else if(isCtrlPressed()){
                 return SCALE_UP;
-            }else{
+            }else if(isAltPressed()){
+                // return UPPER_DIR;
                 return PREVIOUS_BROTHER_DIR;
+            }else{
+                return PREVIOUS_IM;
             }
             
         case XK_Down:
@@ -475,17 +480,31 @@ WindowManager::Command WindowManager::processEvent(const XEvent& event){
                 return MOVE_DOWN;
             }else if(isCtrlPressed()){
                 return SCALE_DOWN;
-            }else{
+            }else if(isAltPressed()){
+                // return LOWER_DIR;
                 return NEXT_BROTHER_DIR;
+            }else{
+                return NEXT_IM;
             }
-            
+
         case XK_Page_Up:
             
-            return UPPER_DIR;            
+            // return UPPER_DIR;
+
+            if(isCtrlPressed()){
+                return SKIP_BACKWARD_FAST;
+            }else{
+                return SKIP_BACKWARD;
+            }
             
         case XK_Page_Down:
             
-            return LOWER_DIR;
+            // return LOWER_DIR;
+            if(isCtrlPressed()){
+                return SKIP_FOWARD_FAST;
+            }else{
+                return SKIP_FOWARD;
+            }
             
         case XK_plus:
             
@@ -515,6 +534,19 @@ WindowManager::Command WindowManager::processEvent(const XEvent& event){
             ctrl_r_pressed = true;
             return NOTHING;
 
+        case XK_Alt_L:
+        case XK_Meta_L:
+        // case XK_Muhenkan:
+
+            alt_l_pressed = true;
+            return NOTHING;
+
+        case XK_Alt_R:
+        case XK_Meta_R:
+
+            alt_r_pressed = true;
+            return NOTHING;
+
         case XK_c:
 
             return CLEAR;
@@ -522,6 +554,10 @@ WindowManager::Command WindowManager::processEvent(const XEvent& event){
         case XK_q:
             
             return QUIT;
+
+        case XK_h:
+
+            return SHOW_HELP;
             
         default:
             
@@ -552,6 +588,19 @@ WindowManager::Command WindowManager::processEvent(const XEvent& event){
         case XK_Control_R:
 
             ctrl_r_pressed = false;
+            return NOTHING;
+
+        case XK_Alt_L:
+        case XK_Meta_L:
+        // case XK_Muhenkan:
+
+            alt_l_pressed = false;
+            return NOTHING;
+
+        case XK_Alt_R:
+        case XK_Meta_R:
+
+            alt_r_pressed = false;
             return NOTHING;
 
         default:
@@ -739,6 +788,11 @@ bool WindowManager::isShiftPressed()const{
 bool WindowManager::isCtrlPressed()const{
 
     return ctrl_l_pressed || ctrl_r_pressed;
+}
+
+bool WindowManager::isAltPressed()const{
+
+    return alt_l_pressed || alt_r_pressed;
 }
 
 void WindowManager::disableFitToWindow(){
