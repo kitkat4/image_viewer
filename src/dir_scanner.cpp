@@ -518,7 +518,7 @@ bool DirScanner::previousBrotherDir(fs::path& brother_dir, const bool loop_enabl
 }
 
 
-bool DirScanner::isImageFile(const std::string& path_str){
+bool DirScanner::isImageFile(const std::string& path_str)try{
 
     fs::path fspath(path_str);
 
@@ -557,5 +557,8 @@ bool DirScanner::isImageFile(const std::string& path_str){
         || ext == ".TIFF"
         || ext == ".TIF";
 
+}catch(const std::exception& ex){
+    std::cerr << "[ WARN] Exception thrown: " << __func__ << "(" << path_str << "): " << ex.what() << std::endl;
+    return false;
 }
 
