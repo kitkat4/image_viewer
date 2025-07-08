@@ -448,6 +448,8 @@ WindowManager::Command WindowManager::processEvent(const XEvent& event){
             
             if(isShiftPressed()){
                 return MOVE_RIGHT;
+            }else if(isAltPressed()){
+                return NEXT_BROTHER_DIR;
             }else{
                 return NEXT_IM;
             }
@@ -456,6 +458,8 @@ WindowManager::Command WindowManager::processEvent(const XEvent& event){
             
             if(isShiftPressed()){
                 return MOVE_LEFT;
+            }else if(isAltPressed()){
+                return PREVIOUS_BROTHER_DIR;
             }else{
                 return PREVIOUS_IM;
             }
@@ -475,8 +479,7 @@ WindowManager::Command WindowManager::processEvent(const XEvent& event){
             }else if(isCtrlPressed()){
                 return SCALE_UP;
             }else if(isAltPressed()){
-                // return UPPER_DIR;
-                return PREVIOUS_BROTHER_DIR;
+                return UPPER_DIR;
             }else{
                 return PREVIOUS_IM;
             }
@@ -488,16 +491,13 @@ WindowManager::Command WindowManager::processEvent(const XEvent& event){
             }else if(isCtrlPressed()){
                 return SCALE_DOWN;
             }else if(isAltPressed()){
-                // return LOWER_DIR;
-                return NEXT_BROTHER_DIR;
+                return LOWER_DIR;
             }else{
                 return NEXT_IM;
             }
 
         case XK_Page_Up:
             
-            // return UPPER_DIR;
-
             if(isCtrlPressed()){
                 return SKIP_BACKWARD_FAST;
             }else{
@@ -506,7 +506,6 @@ WindowManager::Command WindowManager::processEvent(const XEvent& event){
             
         case XK_Page_Down:
             
-            // return LOWER_DIR;
             if(isCtrlPressed()){
                 return SKIP_FOWARD_FAST;
             }else{

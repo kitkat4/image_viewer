@@ -221,18 +221,20 @@ void ImageViewer::showHelp()const{
     std::cout << "Help" << std::endl
               << std::setw(18) << "Right" << ": " << "NEXT_IM" << std::endl
               << std::setw(18) << "Shift + Right" << ": " << "MOVE_RIGHT" << std::endl
+              << std::setw(18) << "Alt + Right" << ": " << "NEXT_BROTHER_DIR" << std::endl
               << std::setw(18) << "Left" << ": " << "PREVIOUS_IM" << std::endl
               << std::setw(18) << "Shift + Left" << ": " << "MOVE_LEFT" << std::endl
+              << std::setw(18) << "Alt + Left" << ": " << "PREVIOUS_BROTHER_DIR" << std::endl
               << std::setw(18) << "Return" << ": " << "NEXT_IM" << std::endl
               << std::setw(18) << "Shift + Return" << ": " << "PREVIOUS_IM" << std::endl
               << std::setw(18) << "Up" << ": " << "PREVIOUS_IM" << std::endl
               << std::setw(18) << "Shift + Up" << ": " << "MOVE_UP" << std::endl
               << std::setw(18) << "Ctrl + Up" << ": " << "SCALE_UP" << std::endl
-              << std::setw(18) << "Alt + Up" << ": " << "PREVIOUS_BROTHER_DIR" << std::endl
+              << std::setw(18) << "Alt + Up" << ": " << "PARENT_DIR" << std::endl
               << std::setw(18) << "Down" << ": " << "NEXT_IM" << std::endl
               << std::setw(18) << "Shift + Down" << ": " << "MOVE_DOWN" << std::endl
               << std::setw(18) << "Ctrl + Down" << ": " << "SCALE_DOWN" << std::endl
-              << std::setw(18) << "Alt + Down" << ": " << "NEXT_BROTHER_DIR" << std::endl
+              << std::setw(18) << "Alt + Down" << ": " << "CHILD_DIR" << std::endl
               << std::setw(18) << "Page_Up" << ": " << "SKIP_BACKWARD" << std::endl
               << std::setw(18) << "Ctrl + Page_Up" << ": " << "SKIP_BACKWARD_FAST" << std::endl            
               << std::setw(18) << "Page_Down" << ": " << "SKIP_FOWARD" << std::endl
