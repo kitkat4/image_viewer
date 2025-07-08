@@ -56,10 +56,6 @@ protected:
     bool nextBrotherDir(fs::path& brother_dir, const bool loop_enabled)const;
     bool previousBrotherDir(fs::path& brother_dir, const bool loop_enabled)const;
     static bool isImageFile(const std::string& path_str);
-    static bool compareString(const std::string& lh, const std::string& rh);
-    static void compareByNumber(const std::string& lh, const std::string& rh, bool& success, bool& result);
-    static bool isNumber(const char c);
-    
 
     bool ok;
 
