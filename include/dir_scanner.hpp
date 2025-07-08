@@ -4,13 +4,8 @@
 
 #include <opencv2/opencv.hpp>
 
-#ifdef BUILD_WITH_BOOST_FILESYSTEM
-#include <boost/filesystem.hpp>
-namespace fs = boost::filesystem;
-#else
-#include <experimental/filesystem>
-namespace fs = std::experimental::filesystem;
-#endif
+#include <filesystem>
+namespace fs = std::filesystem;
 
 #include <thread>
 #include <future>

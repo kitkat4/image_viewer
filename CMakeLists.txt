@@ -4,23 +4,10 @@ project(image_viewer)
 
 add_compile_options(-O2 -Wall)
 
-set(Boost_USE_STATIC_LIBS ON)
-
-
-# Decide whether to use boost or std filesystem.
-find_package(Boost COMPONENTS filesystem)
-if(Boost_FOUND)
-  message(STATUS "Build with Boost filesystem.")
-  add_definitions(-DBUILD_WITH_BOOST_FILESYSTEM)
-  set(FILESYSTEM_LIBS ${Boost_LIBRARIES})
-  set(CMAKE_CXX_STANDARD 11)
-else()
-  message(STATUS "Build with std filesystem (C++17).")
-  set(CMAKE_CXX_STANDARD 17)
-  set(CMAKE_CXX_STANDARD_REQUIRED ON)
-  set(CMAKE_CXX_EXTENSIONS OFF)
-  set(FILESYSTEM_LIBS stdc++fs)
-endif()
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+set(FILESYSTEM_LIBS stdc++fs)
 
 include_directories(include)
 find_package(OpenCV REQUIRED)
