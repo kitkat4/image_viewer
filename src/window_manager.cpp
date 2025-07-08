@@ -197,9 +197,12 @@ void WindowManager::drawImage(const cv::Mat& im){
     }
     
     cv::cvtColor(im_to_draw, im_to_draw, cv::COLOR_BGR2BGRA);
+
+    char* data = (char*)malloc(im_to_draw.cols * im_to_draw.rows * 4);
+
+    memcpy(data, im_to_draw.data, im_to_draw.cols * im_to_draw.rows * 4);
     
-    XImage *x_im = XCreateImage(dis, CopyFromParent, depth,
-                                ZPixmap, 0, (char*)im_to_draw.data,
+    XImage *x_im = XCreateImage(dis, CopyFromParent, depth, ZPixmap, 0, (char*)data,
                                 im_to_draw.cols, im_to_draw.rows, 32, 0);
 
     Pixmap pix = XCreatePixmap(dis, win, im_to_draw.cols, im_to_draw.rows, depth);
@@ -212,6 +215,10 @@ void WindowManager::drawImage(const cv::Mat& im){
               upper_left_x, upper_left_y);
 
     XFlush(dis);
+
+    XFreePixmap(dis, pix);
+    
+    XDestroyImage(x_im);        // dataもfreeされる
 
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
