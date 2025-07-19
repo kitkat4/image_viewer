@@ -9,7 +9,7 @@ ImageViewer::ImageViewer(const std::string& path):
     dir_scanner.reset(new DirScanner(path));
     std::cerr << "[ INFO] Moving to " << dir_scanner->getCurrentDir() << std::endl;
     update();
-    wm.reset(new WindowManager(cur_im.cols, cur_im.rows));
+    wm.reset(new WindowManager(400, 300));
     update();
 }
 
