@@ -6,7 +6,16 @@
 
 int main(int argc, char* argv[]){
 
-    ImageViewer iv(argv[1]);
+    if(argc != 2){
+        std::cerr << "Usage: " << argv[0] << " <image file or directory>" << std::endl;
+        return 1;
+    }
+
+    ImageViewer iv;
+    if(! iv.init(argv[1])){
+        std::cerr << "Error: no image found" << std::endl;
+        return 1;
+    }
 
     iv.enterMainLoop();
 

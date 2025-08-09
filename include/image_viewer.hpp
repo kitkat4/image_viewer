@@ -14,8 +14,9 @@ class DirScanner;
 
 class ImageViewer{
 public:
-    ImageViewer(const std::string& path);
+    ImageViewer();
     ~ImageViewer();
+    bool init(const std::string& path);
     void enterMainLoop();
 
 protected:

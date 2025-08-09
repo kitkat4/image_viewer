@@ -9,6 +9,12 @@ DirScanner::DirScanner()
 
 bool DirScanner::init(const std::string& path){
 
+    ok = false;
+
+    if(! fs::exists(path)){
+        return ok;
+    }
+
     if(fs::is_regular_file(fs::path(path))){ // file
 
         if(fs::path(path).has_parent_path()){
@@ -27,16 +33,11 @@ bool DirScanner::init(const std::string& path){
             }
         }
 
-
     }else{                      // directory
 
         cur_dir = fs::canonical(fs::path(path));
         updateEntries();
         findFirstIm();
-
-        if(! ok){
-            goToNextImDir();
-        }
     }
 
     return ok;
@@ -120,8 +121,7 @@ std::string DirScanner::goToPreviousIm(){
         if(isImageFile(entries[im_ix])){
             
             if(im_ix == old_im_ix){
-                std::cerr << "[INFO ] Image search finished, but no new images found."
-                          << std::endl;
+                std::cerr << "No new images found" << std::endl;
             }
             ok = true;
             return entries[im_ix];
@@ -135,11 +135,17 @@ bool DirScanner::goToNextDir(){
 
     bool success = false;
 
+    std::cout << __FILE__ << __LINE__ << std::endl;
+
     success = goToFirstChildDir();
+
+    std::cout << __FILE__<<__LINE__ << ": " << success << ": " << cur_dir << std::endl;
 
     if(! success){
         success = goToNextBrotherDir();
     }
+
+    std::cout << __FILE__<<__LINE__ << ": " << success << std::endl;
 
     fs::path tmp_cur_dir = cur_dir;
 
@@ -153,23 +159,9 @@ bool DirScanner::goToNextDir(){
         success = goToNextBrotherDir();
     }
 
+    std::cout << __FILE__<<__LINE__ << ": " << success << std::endl;
+
     return true;
-}
-
-bool DirScanner::goToNextImDir(){
-
-    while(true){
-        
-        if(! goToNextDir()){
-            return false;
-        }
-        
-        if(ok){
-            return true;
-        }else{
-            continue;
-        }
-    }
 }
 
 bool DirScanner::goToPreviousDir(){
@@ -182,22 +174,6 @@ bool DirScanner::goToPreviousDir(){
         while(goToLastChildDir()){
         }
         return true;
-    }
-}
-
-bool DirScanner::goToPreviousImDir(){
-
-    while(true){
-
-        if(! goToPreviousDir()){
-            return false;
-        }
-
-        if(ok){
-            return true;
-        }else{
-            continue;
-        }
     }
 }
 
@@ -216,46 +192,6 @@ bool DirScanner::goToParentDir(){
     findFirstIm();
 
     return true;
-}
-
-bool DirScanner::goToFirstImDirUnderNextParentDir(){
-
-    fs::path parent = cur_dir.parent_path();
-
-    fs::path tmp_cur_dir = cur_dir;
-
-    while(true){
-        bool success = goToNextImDir();
-        if(! success){
-            cur_dir = tmp_cur_dir;
-            updateEntries();
-            findFirstIm();
-            return false;
-        }
-        if(parent.generic_string() != cur_dir.parent_path().generic_string()){
-            return true;
-        }
-    }
-}
-
-bool DirScanner::goToLastImDirUnderPreviousParentDir(){
-
-    fs::path parent = cur_dir.parent_path();
-
-    fs::path tmp_cur_dir = cur_dir;
-
-    while(true){
-        bool success = goToPreviousImDir();
-        if(! success){
-            cur_dir = tmp_cur_dir;
-            updateEntries();
-            findFirstIm();
-            return false;
-        }
-        if(parent.generic_string() != cur_dir.parent_path().generic_string()){
-            return true;
-        }
-    }
 }
 
 bool DirScanner::goToFirstChildDir(){
@@ -374,19 +310,13 @@ void DirScanner::scanDir(const fs::path& path, std::vector<std::string>& result)
         for(auto& itr : fs::directory_iterator(path)){
 
             if(abort_scan){
-                std::cout << "[ INFO] Scanning aborted." << std::endl;
+                std::cout << "Scanning aborted." << std::endl;
                 result = buf;
                 break;
             }
             
             std::string tmp_path_str = itr.path().generic_string();
         
-            if(tmp_path_str.find(path_str) != 0){
-                std::cout << "[ WARN] Path: " << tmp_path_str
-                          << " does not contain " << path_str
-                          << ". Skipping it." << std::endl;
-                continue;
-            }
             // remove path_str at the head of tmp_path_str
             tmp_path_str = tmp_path_str.substr(path_str.size());
             buf.push_back(tmp_path_str);
@@ -538,6 +468,10 @@ bool DirScanner::isImageFile(const std::string& path_str)try{
         return false;
     }
 
+    if(! fspath.has_extension()){
+        return false;
+    }
+
     std::string ext = fspath.extension().generic_string();
 
     return ext == ".bmp"
@@ -570,7 +504,7 @@ bool DirScanner::isImageFile(const std::string& path_str)try{
         || ext == ".TIF";
 
 }catch(const std::exception& ex){
-    std::cerr << "[ WARN] Exception thrown: " << __func__ << "(" << path_str << "): " << ex.what() << std::endl;
+    std::cerr << "[ WARN] Exception thrown: " << __func__ << ": " << ex.what() << "(" << path_str << ")"  << std::endl;
     return false;
 }
 

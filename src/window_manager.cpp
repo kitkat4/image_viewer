@@ -1,6 +1,8 @@
 #include "window_manager.hpp"
 
 WindowManager::WindowManager():
+    dis(nullptr),
+    screen(0),
     shift_l_pressed(false),
     shift_r_pressed(false),
     ctrl_l_pressed(false),
@@ -9,39 +11,28 @@ WindowManager::WindowManager():
     alt_r_pressed(false),
     left_dragging(false),
     maybe_left_click(false),
+    last_x_while_dragging(0),
+    last_y_while_dragging(0),
     max_queue_size(5),
     sliding_step(10),
     cur_offset_x(0.0),            // center
     cur_offset_y(0.0),            // center
     initial_scale(1.0),
-    scale_base(2.0), cur_scale_exponent(0),
-    last_scale(1.0), fit_to_window(true), tile_size(64)
+    scale_base(2.0),
+    cur_scale_exponent(0),
+    last_scale(1.0),
+    fit_to_window(true),
+    tile_size(64)
 {
-
+    
 }
 
-WindowManager::WindowManager(const int width, const int height)
-    :shift_l_pressed(false),
-     shift_r_pressed(false),
-     ctrl_l_pressed(false),
-     ctrl_r_pressed(false),
-     left_dragging(false),
-     maybe_left_click(false),
-     max_queue_size(5),
-     sliding_step(10),
-     cur_offset_x(0.0),           // center
-     cur_offset_y(0.0),           // center
-     initial_scale(1.0),
-     scale_base(2.0), cur_scale_exponent(0),
-    last_scale(1.0), fit_to_window(true), tile_size(64){
-
+bool WindowManager::init(const int width, const int height){
 
     dis = XOpenDisplay(nullptr);
 
     if(! dis){
-        std::cerr << "[ERROR] Failed to open a new window (" << __FILE__
-                  << ", line " << __LINE__ << ")"
-                  << std::endl;
+        return false;
     }
     
     screen = DefaultScreen(dis);
@@ -74,6 +65,8 @@ WindowManager::WindowManager(const int width, const int height)
             break;
         }
     }
+
+    return true;
 }
 
 WindowManager::~WindowManager(){}
@@ -542,7 +535,6 @@ WindowManager::Command WindowManager::processEvent(const XEvent& event){
 
         case XK_Alt_L:
         case XK_Meta_L:
-        // case XK_Muhenkan:
 
             alt_l_pressed = true;
             return NOTHING;

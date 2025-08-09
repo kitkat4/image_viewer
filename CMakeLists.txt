@@ -4,7 +4,7 @@ project(image_viewer)
 
 add_compile_options(-O2 -Wall)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(FILESYSTEM_LIBS stdc++fs)

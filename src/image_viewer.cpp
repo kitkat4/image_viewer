@@ -1,22 +1,33 @@
 #include "image_viewer.hpp"
 
 
-ImageViewer::ImageViewer(const std::string& path):
+ImageViewer::ImageViewer():
     skip_count(10){
-
-    showHelp();
-        
-    dir_scanner.reset(new DirScanner);
-    dir_scanner->init(path);
-    std::cerr << "[ INFO] Moving to " << dir_scanner->getCurrentDir() << std::endl;
-    update();
-    wm.reset(new WindowManager(400, 300));
-    update();
 }
 
 ImageViewer::~ImageViewer(){
 
     std::cout << std::endl;
+}
+
+bool ImageViewer::init(const std::string& path){
+        
+    dir_scanner.reset(new DirScanner);
+    if(! dir_scanner->init(path)){
+        return false;
+    }
+    
+    showHelp();
+    
+    update();
+    wm.reset(new WindowManager);
+    if(! wm->init(400, 300)){
+        std::cerr << "Error: Failed to open a new window" << std::endl;
+        return false;
+    }
+    update();
+
+    return true;
 }
 
 void ImageViewer::enterMainLoop(){
@@ -59,7 +70,7 @@ void ImageViewer::enterMainLoop(){
             
         }else if(c == Command::NEXT_DIR){
 
-            dir_scanner->goToNextImDir();
+            dir_scanner->goToNextDir();
             std::cerr << "[ INFO] Moving to " << dir_scanner->getCurrentDir() << std::endl;
             update();
 
@@ -71,25 +82,13 @@ void ImageViewer::enterMainLoop(){
             
         }else if(c == Command::PREVIOUS_DIR){
 
-            dir_scanner->goToPreviousImDir();
+            dir_scanner->goToPreviousDir();
             std::cerr << "[ INFO] Moving to " << dir_scanner->getCurrentDir() << std::endl;
             update();
 
         }else if(c == Command::PREVIOUS_BROTHER_DIR){
 
             dir_scanner->goToPreviousBrotherDir();
-            std::cerr << "[ INFO] Moving to " << dir_scanner->getCurrentDir() << std::endl;
-            update();
-
-        }else if(c == Command::NEXT_PARENT){
-
-            dir_scanner->goToFirstImDirUnderNextParentDir();
-            std::cerr << "[ INFO] Moving to " << dir_scanner->getCurrentDir() << std::endl;
-            update();
-            
-        }else if(c == Command::PREVIOUS_PARENT){
-
-            dir_scanner->goToLastImDirUnderPreviousParentDir();
             std::cerr << "[ INFO] Moving to " << dir_scanner->getCurrentDir() << std::endl;
             update();
 

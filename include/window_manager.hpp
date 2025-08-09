@@ -28,8 +28,6 @@ public:
         NEXT_BROTHER_DIR,
         PREVIOUS_DIR,
         PREVIOUS_BROTHER_DIR,
-        NEXT_PARENT,
-        PREVIOUS_PARENT,
         REDRAW,
         SCALE_UP,
         SCALE_DOWN,
@@ -37,7 +35,6 @@ public:
         MOVE_LEFT,
         MOVE_UP,
         MOVE_DOWN,
-        // MOVE_CENTER,
         CLEAR,
         QUIT,
         SHOW_HELP,
@@ -48,9 +45,9 @@ public:
     }Command;
     
     WindowManager();
-    WindowManager(const int width, const int height);
     ~WindowManager();
 
+    bool init(const int width, const int height);
     void update(const cv::Mat& im, const std::string& current_path);
     Command nextCommand();
     void scaleUp();
@@ -98,9 +95,12 @@ protected:
     Window win;
     GC gc;
 
-    bool shift_l_pressed, shift_r_pressed;
-    bool ctrl_l_pressed, ctrl_r_pressed;
-    bool alt_l_pressed, alt_r_pressed;
+    bool shift_l_pressed;
+    bool shift_r_pressed;
+    bool ctrl_l_pressed;
+    bool ctrl_r_pressed;
+    bool alt_l_pressed;
+    bool alt_r_pressed;
     bool left_dragging;
     bool maybe_left_click;
     int last_x_while_dragging;

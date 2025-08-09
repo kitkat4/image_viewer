@@ -27,12 +27,8 @@ public:
     std::string goToNextIm();
     std::string goToPreviousIm();
     bool goToNextDir();
-    bool goToNextImDir();
     bool goToPreviousDir();
-    bool goToPreviousImDir();
     bool goToParentDir();
-    bool goToFirstImDirUnderNextParentDir();
-    bool goToLastImDirUnderPreviousParentDir();
     bool goToFirstChildDir();
     bool goToLastChildDir();
     bool goToChildDirUsingHistory();
