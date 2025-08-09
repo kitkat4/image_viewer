@@ -2,21 +2,20 @@
 
 
 
-DirScanner::DirScanner(const std::string& path)
-    :ok(false), cur_dir(fs::path()), loop_dir(true), im_ix(-1){
+DirScanner::DirScanner()
+    :ok(false), loop_dir(true), im_ix(-1){
 
-    if(! fs::is_regular_file(fs::path(path))){ // directory given
+}
 
-        cur_dir = fs::canonical(fs::path(path));
-        updateEntries();
-        findFirstIm();
+bool DirScanner::init(const std::string& path){
 
-        if(! ok){
-            goToNextImDir();
+    if(fs::is_regular_file(fs::path(path))){ // file
+
+        if(fs::path(path).has_parent_path()){
+            cur_dir = fs::canonical(fs::path(path).parent_path());
+        }else{
+            cur_dir = fs::current_path();
         }
-        
-    }else{                      // image given
-        cur_dir = fs::canonical(fs::path(path).parent_path());
         updateEntries();
             
         // check the im_ix of the given image
@@ -27,7 +26,20 @@ DirScanner::DirScanner(const std::string& path)
                 break;
             }
         }
+
+
+    }else{                      // directory
+
+        cur_dir = fs::canonical(fs::path(path));
+        updateEntries();
+        findFirstIm();
+
+        if(! ok){
+            goToNextImDir();
+        }
     }
+
+    return ok;
 }
 
 

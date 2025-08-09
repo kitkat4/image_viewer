@@ -18,9 +18,11 @@ using Command = WindowManager::Command;
 
 class DirScanner{
 public:
-    DirScanner(const std::string& path);
+    DirScanner();
     ~DirScanner();
 
+    bool init(const std::string& path);
+    
     std::string getCurrentIm()const;
     std::string goToNextIm();
     std::string goToPreviousIm();
