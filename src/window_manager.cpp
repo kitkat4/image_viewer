@@ -734,8 +734,6 @@ WindowManager::Command WindowManager::processEvent(const XEvent& event){
         
     }else if(event.type == ClientMessage){
 
-        std::cerr << "[INFO ] Window closure detected. Quiting the program." << std::endl;
-
         return QUIT;
         
     }else{

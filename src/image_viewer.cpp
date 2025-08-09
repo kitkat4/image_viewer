@@ -33,8 +33,7 @@ bool ImageViewer::init(const std::string& path){
 void ImageViewer::enterMainLoop(){
 
     if(! dir_scanner){
-        std::cerr << "[ERROR] No instance created"
-                  << std::endl;
+        std::cerr << "Fatal: No instance created" << std::endl;
         return;
     }
     
@@ -59,37 +58,37 @@ void ImageViewer::enterMainLoop(){
         }else if(c == Command::UPPER_DIR){
 
             dir_scanner->goToParentDir();
-            std::cerr << "[ INFO] Moving to " << dir_scanner->getCurrentDir() << std::endl;
+            std::cerr << "Moving to " << dir_scanner->getCurrentDir() << std::endl;
             update();
                 
         }else if(c == Command::LOWER_DIR){
 
             dir_scanner->goToChildDirUsingHistory();
-            std::cerr << "[ INFO] Moving to " << dir_scanner->getCurrentDir() << std::endl;
+            std::cerr << "Moving to " << dir_scanner->getCurrentDir() << std::endl;
             update();            
             
         }else if(c == Command::NEXT_DIR){
 
             dir_scanner->goToNextDir();
-            std::cerr << "[ INFO] Moving to " << dir_scanner->getCurrentDir() << std::endl;
+            std::cerr << "Moving to " << dir_scanner->getCurrentDir() << std::endl;
             update();
 
         }else if(c == Command::NEXT_BROTHER_DIR){
 
             dir_scanner->goToNextBrotherDir();
-            std::cerr << "[ INFO] Moving to " << dir_scanner->getCurrentDir() << std::endl;
+            std::cerr << "Moving to " << dir_scanner->getCurrentDir() << std::endl;
             update();
             
         }else if(c == Command::PREVIOUS_DIR){
 
             dir_scanner->goToPreviousDir();
-            std::cerr << "[ INFO] Moving to " << dir_scanner->getCurrentDir() << std::endl;
+            std::cerr << "Moving to " << dir_scanner->getCurrentDir() << std::endl;
             update();
 
         }else if(c == Command::PREVIOUS_BROTHER_DIR){
 
             dir_scanner->goToPreviousBrotherDir();
-            std::cerr << "[ INFO] Moving to " << dir_scanner->getCurrentDir() << std::endl;
+            std::cerr << "Moving to " << dir_scanner->getCurrentDir() << std::endl;
             update();
 
         }else if(c == Command::SCALE_UP){
@@ -181,26 +180,25 @@ void ImageViewer::update(){
                 std::cout << "\r                                                                  "
                           << std::endl
                           << cur_path << std::endl
-                          << "width   : " << cur_im.cols << std::endl
-                          << "height  : " << cur_im.rows << std::endl
-                          << "channels: " << cur_im.channels() << std::endl;
+                          << "(width, height, channels, type) : ("
+                          << cur_im.cols << ", " << cur_im.rows << ", " << cur_im.channels() << ", ";
                 const int channels = cur_im.channels();
                 if(cur_im.type() == CV_8UC(channels)){
-                    std::cout << "type    : 8U" << std::endl;
+                    std::cout << "8U)" << std::endl;
                 }else if(cur_im.type() == CV_8SC(channels)){
-                    std::cout << "type    : 8S" << std::endl;
+                    std::cout << "8S)" << std::endl;
                 }else if(cur_im.type() == CV_16UC(channels)){
-                    std::cout << "type    : 16U" << std::endl;
+                    std::cout << "16U)" << std::endl;
                 }else if(cur_im.type() == CV_16SC(channels)){
-                    std::cout << "type    : 16S" << std::endl;
+                    std::cout << "16S)" << std::endl;
                 }else if(cur_im.type() == CV_32SC(channels)){
-                    std::cout << "type    : 32S" << std::endl;
+                    std::cout << "32S)" << std::endl;
                 }else if(cur_im.type() == CV_32FC(channels)){
-                    std::cout << "type    : 32F" << std::endl;
+                    std::cout << "32F)" << std::endl;
                 }else if(cur_im.type() == CV_64FC(channels)){
-                    std::cout << "type    : 64F" << std::endl;
+                    std::cout << "64F)" << std::endl;
                 }else{
-                    std::cout << "type    : unknown" << std::endl;
+                    std::cout << "unknown)" << std::endl;
                 }
             }
 

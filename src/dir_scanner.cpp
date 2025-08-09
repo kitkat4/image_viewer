@@ -52,8 +52,7 @@ std::string DirScanner::getCurrentIm()const{
     if(entries.size() > 0){
         return entries[im_ix];
     }else{
-        std::cerr << "[ERROR] No images found."
-                  << std::endl;
+        std::cerr << "Error: No images found." << std::endl;
         return "";
     }
 }
@@ -68,8 +67,7 @@ std::string DirScanner::goToNextIm(){
 
         // no image found
         if(check_count >= (int)entries.size()){
-            std::cerr << "[ERROR] No image found"
-                      << std::endl;
+            std::cerr << "Error: No image found" << std::endl;
             ok = false;
             im_ix = -1;
             return "";
@@ -83,7 +81,7 @@ std::string DirScanner::goToNextIm(){
         
         if(isImageFile(entries[im_ix])){
             if(im_ix == old_im_ix){
-                std::cerr << "[INFO ] Image search finished, but no new images found."
+                std::cerr << "Image search finished, but no new images found."
                           << std::endl;
             }
             ok = true;
@@ -105,8 +103,7 @@ std::string DirScanner::goToPreviousIm(){
 
         // no image found
         if(check_count >= (int)entries.size()){
-            std::cerr << "[ERROR] No image found"
-                      << std::endl;
+            std::cerr << "Error: No image found" << std::endl;
             ok = false;
             im_ix = -1;
             return "";
@@ -340,8 +337,7 @@ void DirScanner::scanDir(const fs::path& path, std::vector<std::string>& result)
 
     switch(status){
     case std::future_status::timeout:
-        std::cout << "[ WARN] Scanning dir is taking too long time."
-                  << " Trying to abort" << std::endl;
+        std::cout << "Warn: Scanning dir is taking too long time. Trying to abort" << std::endl;
         abort_scan = true;
         break;
         
@@ -350,7 +346,7 @@ void DirScanner::scanDir(const fs::path& path, std::vector<std::string>& result)
         
     case std::future_status::deferred:
     default:
-        std::cout << "[FATAL] Unexptected error" << std::endl;
+        std::cout << "Fatal: Unexptected error" << std::endl;
         std::terminate();
     }
 
@@ -409,7 +405,7 @@ bool DirScanner::nextBrotherDir(fs::path& brother_dir, const bool loop_enabled)c
             return false;
         }
     }else{
-        std::cerr << "[ERROR] Unexpected error occured at line " << __LINE__
+        std::cerr << "Error: Unexpected error occured at line " << __LINE__
                   << " in " << __FILE__ << std::endl;
         return false;
     }
@@ -453,7 +449,7 @@ bool DirScanner::previousBrotherDir(fs::path& brother_dir, const bool loop_enabl
         }
     }
 
-    std::cerr << "[ERROR] Unexpected error occured at line " << __LINE__
+    std::cerr << "Error: Unexpected error occured at line " << __LINE__
               << " in " << __FILE__ << std::endl;
     
     return false;
@@ -504,7 +500,7 @@ bool DirScanner::isImageFile(const std::string& path_str)try{
         || ext == ".TIF";
 
 }catch(const std::exception& ex){
-    std::cerr << "[ WARN] Exception thrown: " << __func__ << ": " << ex.what() << "(" << path_str << ")"  << std::endl;
+    std::cerr << "Error: Exception thrown: " << __func__ << ": " << ex.what() << "(" << path_str << ")"  << std::endl;
     return false;
 }
 
