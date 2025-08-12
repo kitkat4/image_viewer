@@ -21,8 +21,7 @@ WindowManager::WindowManager():
     scale_base(2.0),
     cur_scale_exponent(0),
     last_scale(1.0),
-    fit_to_window(true),
-    tile_size(64)
+    fit_to_window(true)
 {
     
 }
@@ -370,41 +369,15 @@ void WindowManager::setDefaultBackground(){
         height = window_attributes.height;
     }
 
-    const int width_big = width % tile_size ? (width / tile_size + 1) * tile_size : width;
-    const int height_big = height % tile_size ? (height / tile_size + 1) * tile_size : height;
-
-    std::vector<XRectangle> rectangles;
-    
-    for(int i_v = 0; i_v < height_big / tile_size; i_v++){
-        int count = i_v % 2;
-        for(int i_h = 0; i_h < width_big / tile_size; i_h++){
-            if(count % 2){
-                XRectangle tmp_rect;
-                tmp_rect.x = i_h * tile_size;
-                tmp_rect.y = i_v * tile_size;
-                tmp_rect.width  = tile_size;
-                tmp_rect.height = tile_size;
-                rectangles.push_back(tmp_rect);
-            }
-            count++;
-        }
-    }
-
-
-    XColor gray1, gray2;
-    gray1.red = gray1.green = gray1.blue = 0x4f00;
-    gray2.red = gray2.green = gray2.blue = 0x4000;
-    gray1.flags = gray2.flags = DoRed | DoGreen | DoBlue;
-    XAllocColor(dis, XDefaultColormap(dis, screen), &gray1);
-    XAllocColor(dis, XDefaultColormap(dis, screen), &gray2);
+    XColor gray;
+    gray.red = gray.green = gray.blue = 0x2000;
+    gray.flags = DoRed | DoGreen | DoBlue;
+    XAllocColor(dis, XDefaultColormap(dis, screen), &gray);
     
     Pixmap pix = XCreatePixmap(dis, win, width, height, depth);
 
-    XSetForeground(dis, gc, gray1.pixel);
+    XSetForeground(dis, gc, gray.pixel);
     XFillRectangle(dis, pix, gc, 0, 0, width, height);
-
-    XSetForeground(dis, gc, gray2.pixel);
-    XFillRectangles(dis, pix, gc, rectangles.data(), (int)rectangles.size());
 
     XSetWindowBackgroundPixmap(dis, win, pix);    
 }

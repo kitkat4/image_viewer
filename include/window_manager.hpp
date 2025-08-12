@@ -122,8 +122,6 @@ protected:
     // If true, scale is ignored.
     bool fit_to_window;
 
-    const int tile_size;
-
     cv::Mat last_im;
 };
 
