@@ -42,7 +42,7 @@ bool WindowManager::init(const int width, const int height){
     XSelectInput(dis, win,
                  ExposureMask | ButtonPressMask | ButtonReleaseMask |
                  Button1MotionMask | KeyPressMask | KeyReleaseMask |
-                 StructureNotifyMask | PointerMotionMask);
+                 StructureNotifyMask | PointerMotionMask | FocusChangeMask);
 
     gc = XCreateGC(dis, win, 0, 0);
 
@@ -529,7 +529,7 @@ WindowManager::Command WindowManager::processEvent(const XEvent& event){
         case XK_h:
 
             return SHOW_HELP;
-            
+
         default:
             
             return NOTHING;
@@ -708,6 +708,17 @@ WindowManager::Command WindowManager::processEvent(const XEvent& event){
     }else if(event.type == ClientMessage){
 
         return QUIT;
+        
+    }else if(event.type == FocusOut){
+
+        shift_l_pressed = false;
+        shift_r_pressed = false;
+        ctrl_l_pressed = false;
+        ctrl_r_pressed = false;
+        alt_l_pressed = false;
+        alt_r_pressed = false;
+        left_dragging = false;
+        maybe_left_click = false;
         
     }else{
         
