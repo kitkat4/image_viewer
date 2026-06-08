@@ -187,8 +187,41 @@ void WindowManager::drawImage(const cv::Mat& im){
         XClearWindow(dis, win);
         return;
     }
+
+    // 可視化用に8bit整数へ変換
+    else if(im_to_draw.type() == CV_8SC(im_to_draw.channels())){
+        
+        im_to_draw.convertTo(im_to_draw, CV_8UC(im_to_draw.channels()), 1.0, 1 << 7);
+        
+    }else if(im_to_draw.type() == CV_16UC(im_to_draw.channels())){
+        
+        im_to_draw.convertTo(im_to_draw, CV_8UC(im_to_draw.channels()), 1.0 / 256.0);
+        
+    }else if(im_to_draw.type() == CV_16SC(im_to_draw.channels())){
+        
+        im_to_draw.convertTo(im_to_draw, CV_8UC(im_to_draw.channels()), 1.0 / 256.0, 1 << 15);
+        
+    }else if(im_to_draw.type() == CV_32SC(im_to_draw.channels())){
+        
+        im_to_draw.convertTo(im_to_draw, CV_8UC(im_to_draw.channels()), 1.0 / 16777216.0, 1 << 31);
+        
+    }else if(im_to_draw.type() == CV_32FC(im_to_draw.channels()) ||
+       im_to_draw.type() == CV_64FC(im_to_draw.channels())){
+        
+        im_to_draw.convertTo(im_to_draw, CV_8UC(im_to_draw.channels()), 255.0);
+        
+    }
     
-    cv::cvtColor(im_to_draw, im_to_draw, cv::COLOR_BGR2BGRA);
+    switch(im_to_draw.channels()){
+    case 3:
+        cv::cvtColor(im_to_draw, im_to_draw, cv::COLOR_BGR2BGRA);
+        break;
+    case 1:
+        cv::cvtColor(im_to_draw, im_to_draw, cv::COLOR_GRAY2BGRA);
+        break;
+    default:
+        throw std::runtime_error("Unexpected channels");
+    }
 
     char* data = (char*)malloc(im_to_draw.cols * im_to_draw.rows * 4);
 
@@ -647,26 +680,19 @@ WindowManager::Command WindowManager::processEvent(const XEvent& event){
                 uint8_t const * const c = last_im.ptr(y_on_im) +
                     x_on_im * last_im.elemSize() + i * last_im.elemSize1();
                 if(last_im.type() == CV_8UC(channels)){
-                    const uint8_t val = *c;
-                    std::cout << static_cast<int>(val);
+                    std::cout << (int)*(uint8_t*)c;
                 }else if(last_im.type() == CV_8SC(channels)){
-                    const int8_t val = *c;
-                    std::cout << static_cast<int>(val);
+                    std::cout << (int)*(int8_t*)c;
                 }else if(last_im.type() == CV_16UC(channels)){
-                    const uint16_t val = *c;
-                    std::cout << static_cast<int>(val);
+                    std::cout << *(uint16_t*)c;
                 }else if(last_im.type() == CV_16SC(channels)){
-                    const int16_t val = *c;
-                    std::cout << static_cast<int>(val);
+                    std::cout << *(int16_t*)c;
                 }else if(last_im.type() == CV_32SC(channels)){
-                    const int32_t val = *c;
-                    std::cout << static_cast<int>(val);
+                    std::cout << *(int32_t*)c;
                 }else if(last_im.type() == CV_32FC(channels)){
-                    const float val = *c;
-                    std::cout << val;
+                    std::cout << *(float*)c;
                 }else if(last_im.type() == CV_64FC(channels)){
-                    const double val = *c;
-                    std::cout << val;
+                    std::cout << *(double*)c;
                 }
             }
             std::cout << "    " << std::flush;

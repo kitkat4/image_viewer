@@ -176,7 +176,7 @@ void ImageViewer::update(){
             if(tmp_path != cur_path){
 
                 cur_path = tmp_path;
-                cur_im = cv::imread(cur_path);
+                cur_im = cv::imread(cur_path, cv::IMREAD_UNCHANGED);
                 std::cout << "\r                                                                  "
                           << std::endl
                           << cur_path << std::endl
