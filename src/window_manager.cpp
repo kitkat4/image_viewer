@@ -219,6 +219,8 @@ void WindowManager::drawImage(const cv::Mat& im){
     case 1:
         cv::cvtColor(im_to_draw, im_to_draw, cv::COLOR_GRAY2BGRA);
         break;
+    case 4:
+        break;
     default:
         throw std::runtime_error("Unexpected channels");
     }
